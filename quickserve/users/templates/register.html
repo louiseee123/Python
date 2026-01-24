@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ COSMIC PORTAL | REGISTRATION</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --neon-cyan: #00f7ff;
+            --neon-purple: #b026ff;
+            --neon-pink: #ff00d4;
+            --matrix-green: #00ff88;
+            --void-black: #0a0a0f;
+            --star-white: #f0f0ff;
+            --nebula-blue: #2a1e5c;
+            --cyber-yellow: #ffd700;
+            --hologram-teal: #00ffcc;
+            --plasma-orange: #ff6b00;
+        }
+        
+        body {
+            background: var(--void-black);
+            font-family: 'Exo 2', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            color: var(--star-white);
+        }
+        
+        /* ANIMATED BACKGROUND LAYERS */
+        .bg-layer-1, .bg-layer-2, .bg-layer-3 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+        }
+        
+        .bg-layer-1 {
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(42, 30, 92, 0.4) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 212, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 40% 50%, rgba(0, 247, 255, 0.15) 0%, transparent 40%);
+            animation: nebulaFloat 20s infinite ease-in-out;
+        }
+        
+        .bg-layer-2 {
+            background-image: 
+                repeating-linear-gradient(90deg, 
+                    transparent 0px, transparent 1px, 
+                    rgba(0, 247, 255, 0.03) 1px, rgba(0, 247, 255, 0.03) 2px);
+            animation: gridMove 15s infinite linear;
+        }
+        
+        .bg-layer-3 {
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%2300f7ff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            animation: starTwinkle 8s infinite alternate;
+        }
+        
+        /* FLOATING PARTICLES */
+        .particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+        
+        .particle {
+            position: absolute;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: floatAround 20s infinite linear;
+        }
+        
+        /* MAIN CONTAINER */
+        .portal-container {
+            width: 100%;
+            max-width: 550px;
+            position: relative;
+            z-index: 10;
+            padding: 20px;
+            perspective: 1000px;
+        }
+        
+        /* GLOWING OUTER RING */
+        .outer-ring {
+            position: absolute;
+            width: 110%;
+            height: 110%;
+            top: -5%;
+            left: -5%;
+            border-radius: 30px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink), var(--hologram-teal));
+            z-index: -1;
+            filter: blur(20px);
+            opacity: 0.5;
+            animation: ringGlow 4s infinite alternate;
+        }
+        
+        /* CARD STYLING */
+        .cyber-card {
+            background: rgba(10, 10, 20, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 60px 50px;
+            box-shadow: 
+                0 0 80px rgba(0, 247, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 247, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .cyber-card:hover {
+            transform: translateY(-15px) rotateX(5deg) rotateY(5deg);
+        }
+        
+        .cyber-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+            animation: scanline 3s infinite linear;
+        }
+        
+        .cyber-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(0, 247, 255, 0.1) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            animation: pulse 6s infinite ease-in-out;
+        }
+        
+        /* HEADER */
+        .portal-header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+        
+        .portal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(0, 247, 255, 0.7);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .portal-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-pink), transparent);
+            border-radius: 2px;
+        }
+        
+        .portal-subtitle {
+            font-size: 1.2rem;
+            color: var(--hologram-teal);
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-top: 20px;
+        }
+        
+        /* FORM STYLING */
+        .cyber-form {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-label {
+            display: block;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: var(--neon-cyan);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .input-label i {
+            color: var(--neon-pink);
+            font-size: 1.3rem;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 22px 25px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 247, 255, 0.3);
+            border-radius: 15px;
+            font-size: 1.2rem;
+            color: var(--star-white);
+            font-family: 'Exo 2', sans-serif;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 30px rgba(255, 0, 212, 0.5);
+            background: rgba(0, 0, 0, 0.7);
+        }
+        
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 300;
+        }
+        
+        .input-field.valid {
+            border-color: var(--matrix-green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+        }
+        
+        .input-field.invalid {
+            border-color: var(--plasma-orange);
+            box-shadow: 0 0 20px rgba(255, 107, 0, 0.4);
+        }
+        
+        .input-glow {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+            border-radius: 2px;
+            transition: width 0.5s ease;
+            z-index: 1;
+        }
+        
+        .input-field:focus ~ .input-glow {
+            width: 100%;
+        }
+        
+        /* PASSWORD TOGGLE */
+        .password-toggle {
+            position: absolute;
+            right: 20px;
+            top: 70px;
+            background: transparent;
+            border: none;
+            color: var(--hologram-teal);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 3;
+        }
+        
+        .password-toggle:hover {
+            color: var(--neon-pink);
+            transform: scale(1.2);
+        }
+        
+        /* VALIDATION MESSAGES */
+        .validation-message {
+            font-size: 0.9rem;
+            margin-top: 10px;
+            padding-left: 10px;
+            height: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .validation-message.valid {
+            color: var(--matrix-green);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.7);
+        }
+        
+        .validation-message.invalid {
+            color: var(--plasma-orange);
+            text-shadow: 0 0 10px rgba(255, 107, 0, 0.7);
+        }
+        
+        /* SUBMIT BUTTON */
+        .submit-container {
+            position: relative;
+            margin-top: 30px;
+        }
+        
+        .cyber-btn {
+            width: 100%;
+            padding: 25px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
+            border: none;
+            border-radius: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--void-black);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+        
+        .cyber-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 247, 255, 0.5);
+            background: linear-gradient(45deg, var(--neon-pink), var(--hologram-teal));
+            color: var(--star-white);
+        }
+        
+        .cyber-btn:active {
+            transform: translateY(0);
+        }
+        
+        .cyber-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s ease;
+        }
+        
+        .cyber-btn:hover::before {
+            left: 100%;
+        }
+        
+        .cyber-btn::after {
+            content: 'ACCESS GRANTED';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, var(--matrix-green), var(--hologram-teal));
+            color: var(--void-black);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .cyber-btn:active::after {
+            opacity: 1;
+        }
+        
+        /* FOOTER */
+        .portal-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(0, 247, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+        
+        .portal-footer a {
+            color: var(--hologram-teal);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .portal-footer a:hover {
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px rgba(255, 0, 212, 0.7);
+        }
+        
+        /* STATUS INDICATORS */
+        .status-indicators {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .status-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--plasma-orange);
+            animation: statusPulse 2s infinite;
+        }
+        
+        .status-light.active {
+            background: var(--matrix-green);
+            box-shadow: 0 0 10px var(--matrix-green);
+        }
+        
+        /* ANIMATIONS */
+        @keyframes nebulaFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-20px, 10px) scale(1.02); }
+            50% { transform: translate(10px, -20px) scale(0.98); }
+            75% { transform: translate(-10px, -10px) scale(1.01); }
+        }
+        
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 100px 100px; }
+        }
+        
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes floatAround {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(100px, 50px) rotate(90deg); }
+            50% { transform: translate(50px, 100px) rotate(180deg); }
+            75% { transform: translate(-50px, 50px) rotate(270deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+        
+        @keyframes ringGlow {
+            0% { opacity: 0.4; transform: scale(1); }
+            100% { opacity: 0.7; transform: scale(1.05); }
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.05); }
+        }
+        
+        @keyframes statusPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .portal-container {
+                padding: 15px;
+            }
+            
+            .cyber-card {
+                padding: 40px 30px;
+            }
+            
+            .portal-title {
+                font-size: 2.5rem;
+            }
+            
+            .input-field {
+                padding: 18px 20px;
+                font-size: 1.1rem;
+            }
+            
+            .cyber-btn {
+                padding: 20px;
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .cyber-card {
+                padding: 30px 20px;
+            }
+            
+            .portal-title {
+                font-size: 2rem;
+            }
+            
+            .portal-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- BACKGROUND LAYERS -->
+    <div class="bg-layer-1"></div>
+    <div class="bg-layer-2"></div>
+    <div class="bg-layer-3"></div>
+    
+    <!-- FLOATING PARTICLES -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- MAIN PORTAL -->
+    <div class="portal-container">
+        <div class="outer-ring"></div>
+        
+        <div class="cyber-card">
+            <!-- STATUS INDICATORS -->
+            <div class="status-indicators">
+                <div class="status-indicator">
+                    <div class="status-light active"></div>
+                    <span>SYSTEM: ONLINE</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-light"></div>
+                    <span>SECURITY: ACTIVE</span>
+                </div>
+            </div>
+            
+            <!-- HEADER -->
+            <div class="portal-header">
+                <h1 class="portal-title">
+                    <i class="fas fa-atom"></i> COSMIC PORTAL
+                </h1>
+                <p class="portal-subtitle">ENTER THE DIGITAL NEXUS • ACCESS RESTRICTED</p>
+            </div>
+            
+            <!-- FORM -->
+            <form class="cyber-form" id="cosmicForm">
+                <!-- USERNAME -->
+                <div class="input-group">
+                    <label class="input-label">
+                        <i class="fas fa-user-astronaut"></i> CYBER IDENTITY
+                    </label>
+                    <input type="text" id="username" class="input-field" placeholder="ENTER YOUR DIGITAL HANDLE" autocomplete="off">
+                    <div class="input-glow"></div>
+                    <div class="validation-message" id="username-message"></div>
+                </div>
+                
+                <!-- EMAIL -->
+                <div class="input-group">
+                    <label class="input-label">
+                        <i class="fas fa-satellite-dish"></i> QUANTUM LINK
+                    </label>
+                    <input type="email" id="email" class="input-field" placeholder="TRANSMISSION FREQUENCY (EMAIL)" autocomplete="off">
+                    <div class="input-glow"></div>
+                    <div class="validation-message" id="email-message"></div>
+                </div>
+                
+                <!-- PASSWORD -->
+                <div class="input-group">
+                    <label class="input-label">
+                        <i class="fas fa-key"></i> ENCRYPTION KEY
+                    </label>
+                    <input type="password" id="password" class="input-field" placeholder="•••••••••••••••••" autocomplete="new-password">
+                    <button type="button" class="password-toggle" id="passwordToggle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <div class="input-glow"></div>
+                    <div class="validation-message" id="password-message"></div>
+                </div>
+                
+                <!-- SUBMIT BUTTON -->
+                <div class="submit-container">
+                    <button type="submit" class="cyber-btn" id="submitBtn">
+                        <i class="fas fa-rocket"></i> INITIATE SEQUENCE
+                    </button>
+                </div>
+            </form>
+            
+            <!-- FOOTER -->
+            <div class="portal-footer">
+                <p>BY PROCEEDING, YOU AGREE TO THE <a href="#">QUANTUM TERMS</a> & <a href="#">NEXUS PROTOCOL</a></p>
+                <p>© 2024 COSMIC SYSTEMS • ALL FREQUENCIES ENCRYPTED</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CREATE FLOATING PARTICLES
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            
+            // Random properties
+            const size = Math.random() * 5 + 2;
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            const duration = Math.random() * 30 + 20;
+            const delay = Math.random() * 5;
+            const color = Math.random() > 0.5 ? 'var(--neon-cyan)' : 'var(--neon-pink)';
+            
+            // Apply styles
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${x}%`;
+            particle.style.top = `${y}%`;
+            particle.style.background = color;
+            particle.style.animationDuration = `${duration}s`;
+            particle.style.animationDelay = `${delay}s`;
+            
+            particlesContainer.appendChild(particle);
+        }
+        
+        // DOM ELEMENTS
+        const form = document.getElementById('cosmicForm');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const passwordToggle = document.getElementById('passwordToggle');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // PASSWORD TOGGLE
+        passwordToggle.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Toggle icon
+            const icon = this.querySelector('i');
+            if (type === 'password') {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                this.style.color = 'var(--hologram-teal)';
+            } else {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                this.style.color = 'var(--neon-pink)';
+            }
+        });
+        
+        // VALIDATION FUNCTIONS
+        function validateUsername(username) {
+            const message = document.getElementById('username-message');
+            
+            if (username.length === 0) {
+                usernameInput.classList.remove('valid', 'invalid');
+                message.textContent = '';
+                message.className = 'validation-message';
+                return false;
+            }
+            
+            if (username.length < 4) {
+                usernameInput.classList.remove('valid');
+                usernameInput.classList.add('invalid');
+                message.textContent = 'DIGITAL HANDLE TOO SHORT (MIN 4 CHARS)';
+                message.className = 'validation-message invalid';
+                return false;
+            }
+            
+            if (!/^[a-zA-Z0-9_\-]+$/.test(username)) {
+                usernameInput.classList.remove('valid');
+                usernameInput.classList.add('invalid');
+                message.textContent = 'INVALID CHARACTERS DETECTED';
+                message.className = 'validation-message invalid';
+                return false;
+            }
+            
+            usernameInput.classList.remove('invalid');
+            usernameInput.classList.add('valid');
+            message.textContent = 'IDENTITY VERIFIED - PROCEED';
+            message.className = 'validation-message valid';
+            return true;
+        }
+        
+        function validateEmail(email) {
+            const message = document.getElementById('email-message');
+            
+            if (email.length === 0) {
+                emailInput.classList.remove('valid', 'invalid');
+                message.textContent = '';
+                message.className = 'validation-message';
+                return false;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(email)) {
+                emailInput.classList.remove('valid');
+                emailInput.classList.add('invalid');
+                message.textContent = 'QUANTUM LINK MALFUNCTION - INVALID FORMAT';
+                message.className = 'validation-message invalid';
+                return false;
+            }
+            
+            emailInput.classList.remove('invalid');
+            emailInput.classList.add('valid');
+            message.textContent = 'TRANSMISSION FREQUENCY ACCEPTED';
+            message.className = 'validation-message valid';
+            return true;
+        }
+        
+        function validatePassword(password) {
+            const message = document.getElementById('password-message');
+            
+            if (password.length === 0) {
+                passwordInput.classList.remove('valid', 'invalid');
+                message.textContent = '';
+                message.className = 'validation-message';
+                return false;
+            }
+            
+            const hasMinLength = password.length >= 8;
+            const hasUpperCase = /[A-Z]/.test(password);
+            const hasLowerCase = /[a-z]/.test(password);
+            const hasNumbers = /\d/.test(password);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            
+            if (!hasMinLength || !hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecial) {
+                passwordInput.classList.remove('valid');
+                passwordInput.classList.add('invalid');
+                message.textContent = 'ENCRYPTION KEY WEAK - REQUIREMENTS NOT MET';
+                message.className = 'validation-message invalid';
+                return false;
+            }
+            
+            passwordInput.classList.remove('invalid');
+            passwordInput.classList.add('valid');
+            message.textContent = 'ENCRYPTION KEY SECURE - MAXIMUM STRENGTH';
+            message.className = 'validation-message valid';
+            return true;
+        }
+        
+        // REAL-TIME VALIDATION
+        usernameInput.addEventListener('input', () => validateUsername(usernameInput.value));
+        emailInput.addEventListener('input', () => validateEmail(emailInput.value));
+        passwordInput.addEventListener('input', () => validatePassword(passwordInput.value));
+        
+        // FORM SUBMISSION
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const isUsernameValid = validateUsername(usernameInput.value);
+            const isEmailValid = validateEmail(emailInput.value);
+            const isPasswordValid = validatePassword(passwordInput.value);
+            
+            if (isUsernameValid && isEmailValid && isPasswordValid) {
+                // ANIMATE BUTTON
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> ACCESS GRANTED';
+                submitBtn.style.background = 'linear-gradient(45deg, var(--matrix-green), var(--hologram-teal))';
+                submitBtn.style.color = 'var(--void-black)';
+                
+                // SIMULATE LOADING
+                setTimeout(() => {
+                    alert('⚡ WELCOME TO THE COSMIC NEXUS ⚡\n\nYOUR QUANTUM IDENTITY HAS BEEN SECURED.\nTRANSMISSION SEQUENCE INITIATED.');
+                    
+                    // RESET FORM
+                    form.reset();
+                    usernameInput.classList.remove('valid');
+                    emailInput.classList.remove('valid');
+                    passwordInput.classList.remove('valid');
+                    
+                    // RESET BUTTON
+                    submitBtn.innerHTML = '<i class="fas fa-rocket"></i> INITIATE SEQUENCE';
+                    submitBtn.style.background = 'linear-gradient(45deg, var(--neon-cyan), var(--neon-purple))';
+                    submitBtn.style.color = 'var(--void-black)';
+                    
+                    // RESET VALIDATION MESSAGES
+                    document.querySelectorAll('.validation-message').forEach(msg => {
+                        msg.textContent = '';
+                        msg.className = 'validation-message';
+                    });
+                    
+                    // RESET PASSWORD TOGGLE
+                    passwordToggle.querySelector('i').classList.remove('fa-eye-slash');
+                    passwordToggle.querySelector('i').classList.add('fa-eye');
+                    passwordToggle.style.color = 'var(--hologram-teal)';
+                    
+                }, 1000);
+            } else {
+                // SHAKE ANIMATION
+                form.style.animation = 'none';
+                setTimeout(() => {
+                    form.style.animation = 'shake 0.5s';
+                }, 10);
+                
+                alert('⚠️ SYSTEM ALERT: FORM VALIDATION FAILED\nPLEASE REVIEW YOUR INPUTS');
+            }
+        });
+        
+        // ADD SHAKE ANIMATION
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+                20%, 40%, 60%, 80% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // RANDOM GLITCH EFFECT
+        setInterval(() => {
+            if (Math.random() > 0.9) {
+                const glitch = document.createElement('div');
+                glitch.style.position = 'fixed';
+                glitch.style.top = Math.random() * 100 + 'vh';
+                glitch.style.left = Math.random() * 100 + 'vw';
+                glitch.style.width = '100px';
+                glitch.style.height = '2px';
+                glitch.style.background = 'var(--neon-pink)';
+                glitch.style.opacity = '0.8';
+                glitch.style.zIndex = '1000';
+                glitch.style.animation = 'glitchMove 0.5s linear';
+                document.body.appendChild(glitch);
+                
+                setTimeout(() => glitch.remove(), 500);
+            }
+        }, 3000);
+        
+        // ADD GLITCH ANIMATION
+        const glitchStyle = document.createElement('style');
+        glitchStyle.textContent = `
+            @keyframes glitchMove {
+                0% { transform: translateX(-100px); opacity: 0; }
+                50% { opacity: 1; }
+                100% { transform: translateX(100px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(glitchStyle);
+    </script>
+</body>
+</html>
