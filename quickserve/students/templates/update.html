@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Student</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+<div class="container">
+    <h1>Update Student</h1>
+
+    <form action="{% url 'update_student' student.s_id %}" method="post">
+        {% csrf_token %}
+        <label for="s_id">Student ID</label><br>
+        <input type="text" name="s_id" value="{{ student.s_id }}" readonly><br><br>
+
+        <label for="s_name">Name</label><br>
+        <input type="text" name="s_name" value="{{ student.s_name }}"><br><br>
+
+        <label for="s_dept">Dept</label><br>
+        <input type="text" name="s_dept" value="{{ student.s_dept }}"><br><br>
+
+        <button type="submit" id="new">Update</button>
+    </form>
+</div>
+
+</body>
+</html>

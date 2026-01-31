@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+<div class="container">
+    <h1>Students</h1>
+
+    <table id="customers" border="1">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Dept</th>
+            <th colspan="2">Action</th>
+        </tr>
+
+        {% for i in students %}
+        <tr>
+            <td>{{ i.s_id }}</td>
+            <td>{{ i.s_name }}</td>
+            <td>{{ i.s_dept }}</td>
+            <td><button class="action-btn" onclick="window.location.href='{% url 'update' i.s_id %}'">Update</button></td>
+            <td>
+                <form method="post" action="{% url 'delete' i.s_id %}">
+                    {% csrf_token %}
+                    <button class="action-btn" type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="{% url 'create' %}">
+        <button id="new">Add Student</button>
+    </a>
+</div>
+
+</body>
+</html>
