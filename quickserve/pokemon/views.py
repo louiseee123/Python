@@ -167,7 +167,8 @@ def pokedex(request):
         pokemon_list = pokemon_list.filter(name__icontains=search_query)
     
     types = Pokemon.TYPES
-    team_pokemon_ids = set(trainer.team.members.values_list('pokemon_id', flat=True))
+    team = trainer.team
+    team_pokemon_ids = set(team.members.values_list('pokemon_id', flat=True))
     
     context = {
         'pokemon_list': pokemon_list,
