@@ -1,0 +1,634 @@
+{% load static %}
+{% load pokextras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Team - Pokemon Trainer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: white; }
+        
+        .navbar { background: rgba(0, 0, 0, 0.3); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-brand { font-size: 1.5rem; font-weight: bold; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; transition: all 0.3s; }
+        .nav-links a:hover { background: rgba(255, 255, 255, 0.1); }
+        .nav-links a.active { background: rgba(78, 205, 196, 0.3); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+        
+        h1 { text-align: center; margin-bottom: 30px; font-size: 2rem; }
+        a.team-member-link { text-decoration: none; color: inherit; }
+        
+        .team-section-wrapper { margin-bottom: 40px; }
+        
+        .team-section-title {
+            text-align: center;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .team-section-title::before, .team-section-title::after {
+            content: '✦';
+            color: #ffd700;
+            animation: sparkle 1.5s ease-in-out infinite;
+        }
+        @keyframes sparkle { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
+        
+        .team-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+        
+        /* ENHANCED TEAM CARDS - Uniform with available Pokemon */
+        .team-member-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-width: 140px;
+            max-width: 160px;
+            flex: 1 1 140px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* Type-specific gradients */
+        .team-member-card.type-fire { background: linear-gradient(135deg, rgba(238, 129, 48, 0.2) 0%, rgba(238, 129, 48, 0.05) 100%); border: 1px solid rgba(238, 129, 48, 0.4); }
+        .team-member-card.type-water { background: linear-gradient(135deg, rgba(99, 144, 240, 0.2) 0%, rgba(99, 144, 240, 0.05) 100%); border: 1px solid rgba(99, 144, 240, 0.4); }
+        .team-member-card.type-grass { background: linear-gradient(135deg, rgba(122, 199, 76, 0.2) 0%, rgba(122, 199, 76, 0.05) 100%); border: 1px solid rgba(122, 199, 76, 0.4); }
+        .team-member-card.type-electric { background: linear-gradient(135deg, rgba(247, 208, 44, 0.2) 0%, rgba(247, 208, 44, 0.05) 100%); border: 1px solid rgba(247, 208, 44, 0.4); }
+        .team-member-card.type-ice { background: linear-gradient(135deg, rgba(150, 217, 214, 0.2) 0%, rgba(150, 217, 214, 0.05) 100%); border: 1px solid rgba(150, 217, 214, 0.4); }
+        .team-member-card.type-fighting { background: linear-gradient(135deg, rgba(191, 97, 106, 0.2) 0%, rgba(191, 97, 106, 0.05) 100%); border: 1px solid rgba(191, 97, 106, 0.4); }
+        .team-member-card.type-poison { background: linear-gradient(135deg, rgba(163, 62, 161, 0.2) 0%, rgba(163, 62, 161, 0.05) 100%); border: 1px solid rgba(163, 62, 161, 0.4); }
+        .team-member-card.type-ground { background: linear-gradient(135deg, rgba(226, 191, 101, 0.2) 0%, rgba(226, 191, 101, 0.05) 100%); border: 1px solid rgba(226, 191, 101, 0.4); }
+        .team-member-card.type-flying { background: linear-gradient(135deg, rgba(169, 143, 243, 0.2) 0%, rgba(169, 143, 243, 0.05) 100%); border: 1px solid rgba(169, 143, 243, 0.4); }
+        .team-member-card.type-psychic { background: linear-gradient(135deg, rgba(249, 85, 135, 0.2) 0%, rgba(249, 85, 135, 0.05) 100%); border: 1px solid rgba(249, 85, 135, 0.4); }
+        .team-member-card.type-bug { background: linear-gradient(135deg, rgba(166, 185, 26, 0.2) 0%, rgba(166, 185, 26, 0.05) 100%); border: 1px solid rgba(166, 185, 26, 0.4); }
+        .team-member-card.type-rock { background: linear-gradient(135deg, rgba(182, 161, 54, 0.2) 0%, rgba(182, 161, 54, 0.05) 100%); border: 1px solid rgba(182, 161, 54, 0.4); }
+        .team-member-card.type-ghost { background: linear-gradient(135deg, rgba(115, 87, 151, 0.2) 0%, rgba(115, 87, 151, 0.05) 100%); border: 1px solid rgba(115, 87, 151, 0.4); }
+        .team-member-card.type-dragon { background: linear-gradient(135deg, rgba(111, 53, 252, 0.2) 0%, rgba(111, 53, 252, 0.05) 100%); border: 1px solid rgba(111, 53, 252, 0.4); }
+        .team-member-card.type-dark { background: linear-gradient(135deg, rgba(112, 87, 70, 0.2) 0%, rgba(112, 87, 70, 0.05) 100%); border: 1px solid rgba(112, 87, 70, 0.4); }
+        .team-member-card.type-steel { background: linear-gradient(135deg, rgba(183, 183, 206, 0.2) 0%, rgba(183, 183, 206, 0.05) 100%); border: 1px solid rgba(183, 183, 206, 0.4); }
+        .team-member-card.type-fairy { background: linear-gradient(135deg, rgba(214, 133, 173, 0.2) 0%, rgba(214, 133, 173, 0.05) 100%); border: 1px solid rgba(214, 133, 173, 0.4); }
+        .team-member-card.type-normal { background: linear-gradient(135deg, rgba(168, 167, 122, 0.15) 0%, rgba(168, 167, 122, 0.05) 100%); border: 1px solid rgba(168, 167, 122, 0.3); }
+        
+        .team-member-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4); }
+        
+        /* Rarity glow effects */
+        .team-member-card.rarity-common { box-shadow: 0 0 15px rgba(149, 165, 166, 0.3); }
+        .team-member-card.rarity-uncommon { box-shadow: 0 0 15px rgba(46, 204, 113, 0.3); }
+        .team-member-card.rarity-rare { box-shadow: 0 0 20px rgba(52, 152, 219, 0.4); }
+        .team-member-card.rarity-epic { box-shadow: 0 0 25px rgba(155, 89, 182, 0.5); }
+        .team-member-card.rarity-legendary { border: 2px solid #ffd700; box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), 0 0 60px rgba(255, 165, 2, 0.3); animation: legendary-pulse 2s ease-in-out infinite; }
+        .team-member-card.rarity-mythical { border: 2px solid #e74c3c; box-shadow: 0 0 30px rgba(231, 76, 60, 0.6), 0 0 60px rgba(192, 57, 43, 0.3); animation: mythical-pulse 2s ease-in-out infinite; }
+        
+        @keyframes legendary-pulse { 0%, 100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), 0 0 60px rgba(255, 165, 2, 0.3); } 50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8), 0 0 80px rgba(255, 165, 2, 0.5); } }
+        @keyframes mythical-pulse { 0%, 100% { box-shadow: 0 0 30px rgba(231, 76, 60, 0.6), 0 0 60px rgba(192, 57, 43, 0.3); } 50% { box-shadow: 0 0 50px rgba(231, 76, 60, 0.8), 0 0 100px rgba(192, 57, 43, 0.5); } }
+        
+        /* Rarity ribbon hidden for active team */
+        .team-member-card .rarity-ribbon { display: none; }
+        
+        .member-icon { width: 70px; height: 70px; margin: 8px auto; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)); transition: all 0.3s ease; }
+        .team-member-card:hover .member-icon { transform: scale(1.1); }
+        
+        /* Shiny sparkle */
+        .shiny-sparkle { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; background: radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.3) 0%, transparent 70%); opacity: 0; animation: shiny-glow 2s ease-in-out infinite; }
+        .shiny-sparkle.active { opacity: 1; }
+        @keyframes shiny-glow { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.1); } }
+        
+        .shiny-star { color: #ffd700; text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; animation: star-twinkle 1s ease-in-out infinite; }
+        @keyframes star-twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.2); } }
+        
+        .team-member-card h3 { margin: 6px 0; font-size: 0.85rem; font-weight: bold; word-wrap: break-word; }
+        
+        /* Type sprites */
+        .member-type { display: block; margin: 8px auto; text-align: center; }
+        .member-type-img { width: 80px; height: 30px; object-fit: contain; display: inline-block; }
+        
+        .rarity-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 600; margin-top: 6px; letter-spacing: 0.5px; }
+        .rarity-common-badge { background: rgba(149, 165, 166, 0.3); border: 1px solid #95a5a6; }
+        .rarity-uncommon-badge { background: rgba(46, 204, 113, 0.3); border: 1px solid #2ecc71; }
+        .rarity-rare-badge { background: rgba(52, 152, 219, 0.3); border: 1px solid #3498db; }
+        .rarity-epic-badge { background: rgba(155, 89, 182, 0.3); border: 1px solid #9c59b6; }
+        .rarity-legendary-badge { background: linear-gradient(45deg, rgba(255, 215, 0, 0.4), rgba(255, 140, 0, 0.4)); border: 1px solid #ffd700; }
+        .rarity-mythical-badge { background: linear-gradient(45deg, rgba(231, 76, 60, 0.4), rgba(192, 57, 43, 0.4)); border: 1px solid #e74c3c; }
+        
+        .empty-team { text-align: center; padding: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 15px; }
+        .empty-team p { margin-bottom: 15px; opacity: 0.8; }
+        .click-hint { font-size: 0.65rem; opacity: 0.5; margin-top: 8px; }
+        
+        /* Empty slots - Uniform with available Pokemon */
+        .empty-slot { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; min-width: 140px; max-width: 160px; flex: 1 1 140px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s ease; cursor: pointer; }
+        .empty-slot:hover { border-color: rgba(255, 215, 0, 0.5); background: rgba(255, 215, 0, 0.05); }
+        .empty-slot-icon { width: 50px; height: 50px; opacity: 0.3; margin-bottom: 8px; }
+        .empty-slot p { opacity: 0.5; font-size: 0.75rem; }
+        
+        /* Available Pokemon Section */
+        .available-pokemon { margin-top: 40px; padding-top: 25px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .available-pokemon h2 { margin-bottom: 15px; font-size: 1.5rem; }
+        
+        /* Search and Filter Bar */
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; align-items: center; justify-content: center; }
+        .search-box { flex: 1; min-width: 180px; max-width: 280px; position: relative; }
+        .search-box input { width: 100%; padding: 10px 15px 10px 40px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 25px; background: rgba(255, 255, 255, 0.1); color: white; font-size: 0.9rem; transition: all 0.3s ease; }
+        .search-box input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .search-box input:focus { outline: none; border-color: #667eea; background: rgba(255, 255, 255, 0.15); box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
+        .search-box::before { content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.9rem; }
+        
+        .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-btn { padding: 7px 14px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.7); font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; }
+        .filter-btn:hover, .filter-btn.active { background: rgba(102, 126, 234, 0.3); border-color: #667eea; color: white; }
+        
+        .available-pokemon > p { margin-bottom: 15px; opacity: 0.7; }
+        .pokemon-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+        
+        /* Available Pokemon Cards - Match Pokedex style */
+        .pokemon-card { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(8px); border-radius: 12px; padding: 12px; text-align: center; min-width: 140px; max-width: 160px; flex: 1 1 140px; transition: all 0.3s ease; position: relative; border: 1px solid rgba(255, 255, 255, 0.1); min-height: 180px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .pokemon-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.1); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3); }
+        
+        .pokemon-card .rarity-ribbon { width: 40px; height: 40px; }
+        .pokemon-card .rarity-label { font-size: 0.5rem; top: 5px; left: 5px; }
+        
+        /* Pokemon Image - Match Pokedex */
+        .pokemon-image { width: 70px; height: 70px; margin: 8px auto; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)); transition: all 0.3s ease; }
+        .pokemon-card:hover .pokemon-image { transform: scale(1.1); }
+        
+        /* Pokemon Name - Match Pokedex */
+        .pokemon-name { font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; word-wrap: break-word; }
+        
+        .pokemon-card.rarity-common { border-color: rgba(149, 165, 166, 0.3); }
+        .pokemon-card.rarity-uncommon { border-color: rgba(46, 204, 113, 0.3); }
+        .pokemon-card.rarity-rare { border-color: rgba(52, 152, 219, 0.3); }
+        .pokemon-card.rarity-epic { border-color: rgba(155, 89, 182, 0.3); }
+        .pokemon-card.rarity-legendary { border-color: rgba(255, 215, 0, 0.5); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
+        .pokemon-card.rarity-mythical { border-color: rgba(231, 76, 60, 0.5); box-shadow: 0 0 15px rgba(231, 76, 60, 0.2); }
+        
+        .pokemon-card .pokemon-type { display: inline-block; margin-bottom: 4px; }
+        .pokemon-card .pokemon-type-img { width: 80px; height: 30px; object-fit: contain; display: block; margin: 0 auto; }
+        
+        .pokemon-card.hidden { display: none; }
+        .pokemon-card .click-hint { font-size: 0.55rem; opacity: 0.5; margin-top: 6px; }
+        
+        /* Rarity ribbon styles */
+        .rarity-ribbon { position: absolute; top: 0; left: 0; width: 40px; height: 40px; overflow: hidden; z-index: 10; }
+        .rarity-ribbon::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; clip-path: polygon(0 0, 100% 0, 0 100%); }
+        .rarity-ribbon.rarity-common::before { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
+        .rarity-ribbon.rarity-uncommon::before { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .rarity-ribbon.rarity-rare::before { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .rarity-ribbon.rarity-epic::before { background: linear-gradient(135deg, #9c59b6, #8e44ad); }
+        .rarity-ribbon.rarity-legendary::before { background: linear-gradient(135deg, #ffd700, #f39c12); }
+        .rarity-ribbon.rarity-mythical::before { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        
+        .rarity-label { position: absolute; top: 5px; left: 5px; font-size: 0.5rem; font-weight: bold; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5); z-index: 11; }
+        
+        /* MODAL STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.active { display: flex; }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-close:hover { background: rgba(231, 76, 60, 0.8); }
+        
+        .modal-pokemon-icon {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            margin: 20px 0;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+        }
+        
+        .modal-pokemon-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .modal-pokemon-type {
+            display: block;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .modal-pokemon-type-img {
+            width: 100px;
+            height: 36px;
+            object-fit: contain;
+        }
+        
+        .modal-pokemon-rarity {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .modal-caught-date {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-bottom: 20px;
+        }
+        
+        .modal-pokemon-shiny {
+            color: #ffd700;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .modal-btn-add {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+        .modal-btn-add:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6); }
+        
+        .modal-btn-remove {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+        .modal-btn-remove:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6); }
+        
+        .modal-btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .modal-btn-back:hover { background: rgba(255, 255, 255, 0.2); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-links">
+            <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
+            <a href="{% url 'pokemon:pokedex' %}">Pokédex</a>
+            <a href="{% url 'pokemon:my_team' %}" class="active">My Team</a>
+            <a href="{% url 'pokemon:profile' %}">Profile</a>
+            <a href="{% url 'pokemon:safari_zone' %}">Safari Zone</a>
+            <a href="{% url 'pokemon:logout' %}">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>My Team</h1>
+        
+        <div class="team-section-wrapper">
+            <div class="team-section-title">Your Active Team</div>
+        
+        {% if members %}
+            <div class="team-grid">
+                {% for member in members %}
+                <div class="team-member-card type-{{ member.pokemon.type|lower }} rarity-{{ member.pokemon.rarity|lower }}" 
+                     data-rarity="{{ member.pokemon.rarity|lower }}" 
+                     data-name="{{ member.pokemon.name|lower }}"
+                     data-pokemon-id="{{ member.pokemon.id }}"
+                     data-pokemon-name="{{ member.pokemon.name }}"
+                     data-pokemon-type="{{ member.pokemon.type }}"
+                     data-pokemon-rarity="{{ member.pokemon.rarity }}"
+                     data-pokemon-sprite="{{ member.pokemon.sprite_url }}"
+                     data-pokemon-shiny="{% if team_shiny|get_item:member.id %}true{% else %}false{% endif %}"
+                     data-caught-date="{{ member.caught_date|date:'F j, Y' }}"
+                     data-member-id="{{ member.id }}"
+                     data-member-nickname="{{ member.nickname|default:member.pokemon.name }}"
+                     onclick="showTeamMemberModal(this)">
+                    {% if team_shiny|get_item:member.id %}
+                    <div class="shiny-sparkle active"></div>
+                    {% endif %}
+                    <img src="{{ member.pokemon.sprite_url }}" alt="{{ member.pokemon.name }}" class="member-icon">
+                    <h3>{{ member.nickname|default:member.pokemon.name }}{% if team_shiny|get_item:member.id %} <span class="shiny-star">★</span>{% endif %}</h3>
+                    <div class="member-type">
+                        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/{{ member.pokemon.type|lower|type_to_number }}.png" alt="{{ member.pokemon.type }}" class="member-type-img" onerror="this.style.display='none'">
+                    </div>
+                    <span class="rarity-badge rarity-{{ member.pokemon.rarity|lower }}-badge">{{ member.pokemon.rarity }}</span>
+                    <p class="click-hint">Click for options</p>
+                </div>
+                {% endfor %}
+                
+                {% with team_size=members|length %}
+                {% if team_size < max_team_size %}
+                <a href="{% url 'pokemon:pokedex' %}" class="team-member-link">
+                    <div class="empty-slot">
+                        <svg class="empty-slot-icon" viewBox="0 0 100 100" fill="currentColor">
+                            <ellipse cx="50" cy="35" rx="30" ry="25"/>
+                            <circle cx="35" cy="30" r="8" fill="#1a1a2e"/>
+                            <circle cx="65" cy="30" r="8" fill="#1a1a2e"/>
+                            <ellipse cx="50" cy="45" rx="10" ry="5" fill="#1a1a2e"/>
+                            <path d="M30 65 Q50 85 70 65" stroke="currentColor" stroke-width="3" fill="none"/>
+                        </svg>
+                        <p>Empty Slot - Click to Add</p>
+                    </div>
+                </a>
+                {% endif %}
+                {% endwith %}
+            </div>
+        {% else %}
+            <div class="empty-team">
+                <p>Your team is empty! Add Pokemon from your collection below.</p>
+                <a href="{% url 'pokemon:pokedex' %}" class="btn btn-primary">Go to Pokédex</a>
+            </div>
+        {% endif %}
+        </div>
+        
+        <div class="available-pokemon">
+            <h2>Available Pokemon</h2>
+            
+            <div class="filter-bar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by name..." onkeyup="filterPokemon()">
+                </div>
+                <div class="filter-group">
+                    <button class="filter-btn active" onclick="filterByRarity('all', this)">All</button>
+                    <button class="filter-btn" onclick="filterByRarity('common', this)">Common</button>
+                    <button class="filter-btn" onclick="filterByRarity('uncommon', this)">Uncommon</button>
+                    <button class="filter-btn" onclick="filterByRarity('rare', this)">Rare</button>
+                    <button class="filter-btn" onclick="filterByRarity('epic', this)">Epic</button>
+                    <button class="filter-btn" onclick="filterByRarity('legendary', this)">Legendary</button>
+                    <button class="filter-btn" onclick="filterByRarity('mythical', this)">Mythical</button>
+                </div>
+            </div>
+            
+            <p>Click on a Pokemon to add to your team</p>
+            <div class="pokemon-grid" id="availableGrid">
+                {% for p in available_pokemon %}
+                <div class="pokemon-card rarity-{{ p.0.rarity|lower }}" 
+                     data-rarity="{{ p.0.rarity|lower }}" 
+                     data-name="{{ p.0.name|lower }}"
+                     data-pokemon-id="{{ p.0.id }}"
+                     data-pokemon-name="{{ p.0.name }}"
+                     data-pokemon-type="{{ p.0.type }}"
+                     data-pokemon-rarity="{{ p.0.rarity }}"
+                     data-pokemon-sprite="{{ p.0.sprite_url }}"
+                     data-pokemon-shiny="{% if p.1 %}true{% else %}false{% endif %}"
+                     data-caught-date="{{ p.2|date:'F j, Y' }}"
+                     onclick="showPokemonModal(this)">
+                    <div class="rarity-ribbon rarity-{{ p.0.rarity|lower }}">
+                        <span class="rarity-label">
+                            {% if p.0.rarity == 'Common' %}C
+                            {% elif p.0.rarity == 'Uncommon' %}UC
+                            {% elif p.0.rarity == 'Rare' %}R
+                            {% elif p.0.rarity == 'Epic' %}E
+                            {% elif p.0.rarity == 'Legendary' %}L
+                            {% elif p.0.rarity == 'Mythical' %}M
+                            {% endif %}
+                        </span>
+                    </div>
+                    <img src="{{ p.0.sprite_url }}" alt="{{ p.0.name }}" class="pokemon-image">
+                    <div class="pokemon-name">{{ p.0.name }}{% if p.1 %} <span class="shiny-star">★</span>{% endif %}</div>
+                    <div class="pokemon-type">
+                        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/{{ p.0.type|lower|type_to_number }}.png" alt="{{ p.0.type }}" class="pokemon-type-img" onerror="this.style.display='none'">
+                    </div>
+                    <p class="click-hint">Click to add</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal-overlay" id="pokemonModal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModalBtn()">✕</button>
+            
+            <img src="" alt="" class="modal-pokemon-icon" id="modalIcon">
+            
+            <div class="modal-pokemon-name" id="modalName"></div>
+            
+            <div class="modal-pokemon-shiny" id="modalShiny" style="display: none;">⭐ SHINY ⭐</div>
+            
+            <div class="modal-pokemon-type">
+                <img src="" alt="" class="modal-pokemon-type-img" id="modalType">
+            </div>
+            
+            <div class="modal-pokemon-rarity" id="modalRarity"></div>
+            
+            <div class="modal-caught-date" id="modalDate"></div>
+            
+            <div class="modal-buttons">
+                <a href="" class="modal-btn modal-btn-add" id="modalAddBtn">Add to Team</a>
+                <button class="modal-btn modal-btn-back" onclick="closeModalBtn()">Back</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function filterPokemon() {
+            var searchInput = document.getElementById('searchInput').value.toLowerCase();
+            var cards = document.querySelectorAll('.pokemon-card');
+            var activeRarity = document.querySelector('.filter-btn.active').textContent.toLowerCase();
+            
+            cards.forEach(function(card) {
+                var name = card.dataset.name;
+                var rarity = card.dataset.rarity;
+                var matchesSearch = name.includes(searchInput);
+                var matchesRarity = activeRarity === 'all' || rarity === activeRarity;
+                
+                if (matchesSearch && matchesRarity) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+        
+        function filterByRarity(rarity, btn) {
+            document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            
+            var searchInput = document.getElementById('searchInput').value.toLowerCase();
+            var cards = document.querySelectorAll('.pokemon-card');
+            
+            cards.forEach(function(card) {
+                var name = card.dataset.name;
+                var cardRarity = card.dataset.rarity;
+                var matchesSearch = name.includes(searchInput);
+                var matchesRarity = rarity === 'all' || cardRarity === rarity;
+                
+                if (matchesSearch && matchesRarity) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Modal functions for available Pokemon (shows "Add to Team" button)
+        function showPokemonModal(card) {
+            var modal = document.getElementById('pokemonModal');
+            var pokemonId = card.dataset.pokemonId;
+            var pokemonName = card.dataset.pokemonName;
+            var pokemonType = card.dataset.pokemonType;
+            var pokemonRarity = card.dataset.pokemonRarity;
+            var pokemonSprite = card.dataset.pokemonSprite;
+            var pokemonShiny = card.dataset.pokemonShiny === 'true';
+            var caughtDate = card.dataset.caughtDate;
+            
+            document.getElementById('modalIcon').src = pokemonSprite;
+            document.getElementById('modalName').textContent = pokemonName;
+            
+            // Type icon
+            var typeNum = typeToNumber(pokemonType.toLowerCase());
+            document.getElementById('modalType').src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/' + typeNum + '.png';
+            
+            // Rarity
+            var rarityEl = document.getElementById('modalRarity');
+            rarityEl.textContent = pokemonRarity;
+            rarityEl.className = 'modal-pokemon-rarity rarity-' + pokemonRarity.toLowerCase() + '-badge';
+            
+            // Shiny
+            var shinyEl = document.getElementById('modalShiny');
+            shinyEl.style.display = pokemonShiny ? 'block' : 'none';
+            
+            // Date
+            document.getElementById('modalDate').textContent = 'Caught: ' + caughtDate;
+            
+            // Add button - show "Add to Team" for available Pokemon
+            var addBtn = document.getElementById('modalAddBtn');
+            addBtn.href = '/team/add/' + pokemonId + '/';
+            addBtn.textContent = 'Add to Team';
+            addBtn.className = 'modal-btn modal-btn-add';
+            addBtn.style.display = 'inline-block';
+            
+            modal.classList.add('active');
+        }
+        
+        // Show team member modal (for active team Pokemon - shows "Remove Pokemon" button)
+        function showTeamMemberModal(card) {
+            var modal = document.getElementById('pokemonModal');
+            var pokemonId = card.dataset.pokemonId;
+            var pokemonType = card.dataset.pokemonType;
+            var pokemonRarity = card.dataset.pokemonRarity;
+            var pokemonSprite = card.dataset.pokemonSprite;
+            var pokemonShiny = card.dataset.pokemonShiny === 'true';
+            var caughtDate = card.dataset.caughtDate;
+            var memberId = card.dataset.memberId;
+            var memberNickname = card.dataset.memberNickname;
+            
+            document.getElementById('modalIcon').src = pokemonSprite;
+            document.getElementById('modalName').textContent = memberNickname;
+            
+            // Type icon
+            var typeNum = typeToNumber(pokemonType.toLowerCase());
+            document.getElementById('modalType').src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/' + typeNum + '.png';
+            
+            // Rarity
+            var rarityEl = document.getElementById('modalRarity');
+            rarityEl.textContent = pokemonRarity;
+            rarityEl.className = 'modal-pokemon-rarity rarity-' + pokemonRarity.toLowerCase() + '-badge';
+            
+            // Shiny
+            var shinyEl = document.getElementById('modalShiny');
+            shinyEl.style.display = pokemonShiny ? 'block' : 'none';
+            
+            // Date
+            document.getElementById('modalDate').textContent = 'Caught: ' + caughtDate;
+            
+            // Change buttons for active team member - show "Remove Pokemon" and "Back"
+            var addBtn = document.getElementById('modalAddBtn');
+            addBtn.href = '/team/remove/' + memberId + '/';
+            addBtn.textContent = 'Remove Pokemon';
+            addBtn.className = 'modal-btn modal-btn-remove';
+            addBtn.onclick = function(e) {
+                e.preventDefault();
+                if (confirm('Remove ' + memberNickname + ' from your team?')) {
+                    window.location.href = '/team/remove/' + memberId + '/';
+                }
+            };
+            
+            modal.classList.add('active');
+        }
+        
+        function closeModalBtn() {
+            document.getElementById('pokemonModal').classList.remove('active');
+        }
+        
+        function closeModal(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('active');
+            }
+        }
+        
+        // Type to number mapping
+        function typeToNumber(type) {
+            var types = {
+                'normal': 1, 'fighting': 2, 'flying': 3, 'poison': 4,
+                'ground': 5, 'rock': 6, 'bug': 7, 'ghost': 8,
+                'steel': 9, 'fire': 10, 'water': 11, 'grass': 12,
+                'electric': 13, 'psychic': 14, 'ice': 15, 'dragon': 16,
+                'dark': 17, 'fairy': 18
+            };
+            return types[type] || 1;
+        }
+    </script>
+</body>
+</html>
