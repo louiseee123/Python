@@ -1,0 +1,337 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory - Pokémon Trainer</title>
+    <link rel="stylesheet" href="{% static 'pokemon/background.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; color: white; }
+        .navbar { background: rgba(0, 0, 0, 0.3); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-brand { font-size: 1.5rem; font-weight: bold; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; transition: all 0.3s; }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); }
+        .nav-links a.active { background: rgba(78,205,196,0.3); }
+        .logout-icon { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .logout-icon:hover { background: rgba(255,100,100,0.3); transform: scale(1.1); }
+        .logout-icon svg { width: 20px; height: 20px; fill: white; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+        
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Layout with Sidebar */
+        .inventory-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+        
+        /* Filter Sidebar */
+        .filter-sidebar {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 25px;
+            height: fit-content;
+        }
+        .filter-sidebar h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .filter-list {
+            list-style: none;
+        }
+        .filter-item {
+            margin-bottom: 10px;
+        }
+        .filter-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .filter-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .filter-link.active {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+        .filter-count {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        
+        /* Items Grid */
+        .items-section h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        /* Item Card */
+        .item-card {
+            background: linear-gradient(135deg, #2d2d44, #1e1e32);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .item-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .item-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .item-image {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            object-fit: contain;
+        }
+        .item-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .item-description {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-bottom: 15px;
+            min-height: 40px;
+        }
+        .item-quantity {
+            display: inline-block;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+        }
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .empty-state p {
+            opacity: 0.7;
+        }
+        
+        /* Category Icons */
+        .category-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-links">
+            <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
+            <a href="{% url 'pokemon:pokedex' %}">Pokédex</a>
+            <a href="{% url 'pokemon:my_team' %}">My Team</a>
+            <a href="{% url 'pokemon:profile' %}">Profile</a>
+            <a href="{% url 'pokemon:shop' %}">Shop</a>
+            <a href="{% url 'pokemon:safari_zone' %}">Safari Zone</a>
+            <a href="{% url 'pokemon:inventory' %}" class="active">Inventory</a>
+            <a href="{% url 'pokemon:achievements' %}">Achievements</a>
+            <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+            </a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>Your Inventory</h1>
+            <p>Manage your items and resources</p>
+        </div>
+        
+        <div class="inventory-layout">
+            <!-- Filter Sidebar -->
+            <aside class="filter-sidebar">
+                <h3>Categories</h3>
+                <ul class="filter-list">
+                    <li class="filter-item">
+                        <a href="{% url 'pokemon:inventory' %}?category=all" 
+                           class="filter-link {% if filter_category == 'all' %}active{% endif %}">
+                            <span>All Items</span>
+                            <span class="filter-count">{{ category_counts.all }}</span>
+                        </a>
+                    </li>
+                    <li class="filter-item">
+                        <a href="{% url 'pokemon:inventory' %}?category=egg" 
+                           class="filter-link {% if filter_category == 'egg' %}active{% endif %}">
+                            <span>Eggs</span>
+                            <span class="filter-count">{{ category_counts.egg }}</span>
+                        </a>
+                    </li>
+                    <li class="filter-item">
+                        <a href="{% url 'pokemon:inventory' %}?category=pokeball" 
+                           class="filter-link {% if filter_category == 'pokeball' %}active{% endif %}">
+                            <span>Pokeballs</span>
+                            <span class="filter-count">{{ category_counts.pokeball }}</span>
+                        </a>
+                    </li>
+                    <li class="filter-item">
+                        <a href="{% url 'pokemon:inventory' %}?category=berry" 
+                           class="filter-link {% if filter_category == 'berry' %}active{% endif %}">
+                            <span>Berries</span>
+                            <span class="filter-count">{{ category_counts.berry }}</span>
+                        </a>
+                    </li>
+                    <li class="filter-item">
+                        <a href="{% url 'pokemon:inventory' %}?category=potion" 
+                           class="filter-link {% if filter_category == 'potion' %}active{% endif %}">
+                            <span>Potions</span>
+                            <span class="filter-count">{{ category_counts.potion }}</span>
+                        </a>
+                    </li>
+                    <li class="filter-item">
+                        <a href="{% url 'pokemon:inventory' %}?category=status_heal" 
+                           class="filter-link {% if filter_category == 'status_heal' %}active{% endif %}">
+                            <span>Status Heals</span>
+                            <span class="filter-count">{{ category_counts.status_heal }}</span>
+                        </a>
+                    </li>
+                    <li class="filter-item">
+                        <a href="{% url 'pokemon:inventory' %}?category=evolution" 
+                           class="filter-link {% if filter_category == 'evolution' %}active{% endif %}">
+                            <span>Evolution Items</span>
+                            <span class="filter-count">{{ category_counts.evolution }}</span>
+                        </a>
+                    </li>
+                    <li class="filter-item">
+                        <a href="{% url 'pokemon:inventory' %}?category=vitamin" 
+                           class="filter-link {% if filter_category == 'vitamin' %}active{% endif %}">
+                            <span>Vitamins</span>
+                            <span class="filter-count">{{ category_counts.vitamin }}</span>
+                        </a>
+                    </li>
+                    <li class="filter-item">
+                        <a href="{% url 'pokemon:inventory' %}?category=exp" 
+                           class="filter-link {% if filter_category == 'exp' %}active{% endif %}">
+                            <span>EXP Candies</span>
+                            <span class="filter-count">{{ category_counts.exp }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+            
+            <!-- Items Display -->
+            <main class="items-section">
+                <h2>
+                    {% if filter_category == 'all' %}All Items
+                    {% elif filter_category == 'egg' %}Eggs
+                    {% elif filter_category == 'pokeball' %}Pokeballs
+                    {% elif filter_category == 'berry' %}Berries
+                    {% elif filter_category == 'potion' %}Potions
+                    {% elif filter_category == 'status_heal' %}Status Heals
+                    {% elif filter_category == 'evolution' %}Evolution Items
+                    {% elif filter_category == 'vitamin' %}Vitamins
+                    {% elif filter_category == 'exp' %}EXP Candies
+                    {% else %}All Items{% endif %}
+                </h2>
+                
+                {% if inventory_items %}
+                <div class="items-grid">
+                    {% for item in inventory_items %}
+                    <div class="item-card">
+                        {% if item.image_url %}
+                        <img src="{{ item.image_url }}" alt="{{ item.name }}" class="item-image">
+                        {% else %}
+                        <div class="item-icon">{{ item.shop_item.icon }}</div>
+                        {% endif %}
+                        <div class="item-name">{{ item.name }}</div>
+                        <div class="item-description">{{ item.description }}</div>
+                        <div class="item-quantity">x{{ item.quantity }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <h3>No Items Found</h3>
+                    <p>
+                        {% if filter_category == 'all' %}
+                        You don't have any items yet. Visit the Shop to buy some!
+                        {% else %}
+                        You don't have any items in this category.
+                        {% endif %}
+                    </p>
+                    <br>
+                    <a href="{% url 'pokemon:shop' %}" style="color: #4facfe;">Visit Shop →</a>
+                </div>
+                {% endif %}
+            </main>
+        </div>
+    </div>
+</body>
+</html>

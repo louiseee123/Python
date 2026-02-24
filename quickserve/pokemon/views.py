@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 from datetime import date
 import random
-from .models import Trainer, Pokemon, Team, TeamMember, PokemonUnlock, DailyTask, TrainerTaskCompletion
+from .models import Trainer, Pokemon, Team, TeamMember, PokemonUnlock, DailyTask, TrainerTaskCompletion, ShopItem, InventoryItem
 
 
 def home(request):
@@ -155,9 +155,10 @@ def pokedex(request):
     pokemon_type = request.GET.get('type')
     search_query = request.GET.get('search')
     
+    # Pre-compute pokemon data with unlock status
     unlocked_data = {}
     for unlock in trainer.unlocks.all():
-        unlocked_data[unlock.pokemon_id] = unlock.shiny
+        unlocked_data[unlock.pokemon_id] = {'shiny': unlock.shiny}
     
     pokemon_list = Pokemon.objects.all()
     
@@ -170,15 +171,26 @@ def pokedex(request):
     team = trainer.team
     team_pokemon_ids = set(team.members.values_list('pokemon_id', flat=True))
     
+    # Pre-compute list of pokemon with status
+    pokemon_data = []
+    for pokemon in pokemon_list:
+        pokemon_data.append({
+            'pokemon': pokemon,
+            'is_unlocked': pokemon.id in unlocked_data,
+            'is_shiny': unlocked_data.get(pokemon.id, {}).get('shiny', False),
+            'in_team': pokemon.id in team_pokemon_ids,
+        })
+    
     context = {
-        'pokemon_list': pokemon_list,
-        'unlocked_ids': set(unlocked_data.keys()),
-        'unlocked_data': unlocked_data,
+        'pokemon_data': pokemon_data,
         'types': types,
         'selected_type': pokemon_type,
         'search_query': search_query,
-        'trainer': trainer, 'team_size': team.members.count(), 'max_team_size': trainer.max_team_size,
-        'team_pokemon_ids': team_pokemon_ids,
+        'trainer': trainer, 
+        'team_size': team.members.count(), 
+        'max_team_size': trainer.max_team_size,
+        'total_pokemon': Pokemon.objects.count(),
+        'unlocked_count': len(unlocked_data),
     }
     return render(request, 'pokemon/pokedex.html', context)
 
@@ -213,7 +225,7 @@ def my_team(request):
         'team_shiny': team_shiny,
         'available_pokemon': available_pokemon,
     }
-    return render(request, 'pokemon/my_team.html', context)
+    return render(request, 'pokemon/my_team_updated.html', context)
 
 
 @login_required
@@ -388,6 +400,26 @@ def hatch_egg(request):
     
     team = trainer.team
     added_to_team = False
+    
+    # Coin values for duplicate Pokemon (only for non-shiny duplicates)
+    coin_values = {
+        'Common': 100,
+        'Uncommon': 250,
+        'Rare': 500,
+        'Epic': 750,
+        'Legendary': 1000,
+    }
+    
+    # Check if this is a duplicate (already unlocked non-shiny)
+    is_duplicate = already_unlocked and not is_shiny
+    coins_earned = 0
+    
+    if is_duplicate:
+        # Convert duplicate to PokeHunt Coins
+        coins_earned = coin_values.get(selected_rarity, 100)
+        trainer.hunt_coins += coins_earned
+        trainer.save()
+    
     if not team.is_full:
         if not team.members.filter(pokemon=random_pokemon).exists():
             TeamMember.objects.create(
@@ -408,6 +440,9 @@ def hatch_egg(request):
         'xp_earned': xp_earned,
         'already_unlocked': already_unlocked,
         'is_shiny': is_shiny,
+        'duplicate_pokemon': team.members.filter(pokemon=random_pokemon).exists() if not added_to_team else False,
+        'is_duplicate': is_duplicate,
+        'coins_earned': coins_earned,
     }
     return render(request, 'pokemon/hatch_result.html', context)
 
@@ -424,12 +459,555 @@ def profile(request):
     members = team.members.all()
     recent_unlocks = trainer.unlocks.select_related('pokemon').order_by('-unlocked_at')[:5]
     
+    # Get Pokemon statistics
+    all_unlocks = trainer.unlocks.all()
+    total_unlocked = all_unlocks.count()
+    legendary_unlocked = all_unlocks.filter(pokemon__rarity='Legendary').count()
+    epic_unlocked = all_unlocks.filter(pokemon__rarity='Epic').count()
+    rare_unlocked = all_unlocks.filter(pokemon__rarity='Rare').count()
+    shiny_unlocked = all_unlocks.filter(shiny=True).count()
+    
+    # Get total Pokemon count
+    total_pokemon = Pokemon.objects.count()
+    
+    # Get team members with their shiny status
+    team_members = []
+    for member in members:
+        unlock = trainer.unlocks.filter(pokemon=member.pokemon).first()
+        is_shiny = unlock.shiny if unlock else False
+        team_members.append({
+            'member': member,
+            'is_shiny': is_shiny,
+            'pokemon': member.pokemon
+        })
+    
     context = {
         'trainer': trainer, 'team_size': team.members.count(), 'max_team_size': trainer.max_team_size,
         'members': members,
         'recent_unlocks': recent_unlocks,
+        'total_unlocked': total_unlocked,
+        'total_pokemon': total_pokemon,
+        'legendary_unlocked': legendary_unlocked,
+        'epic_unlocked': epic_unlocked,
+        'rare_unlocked': rare_unlocked,
+        'shiny_unlocked': shiny_unlocked,
+        'team_members': team_members,
     }
     return render(request, 'pokemon/profile.html', context)
+
+
+@login_required
+def achievements(request):
+    """Trainer achievements view."""
+    try:
+        trainer = request.user.trainer
+    except Trainer.DoesNotExist:
+        return redirect('pokemon:create_trainer')
+    
+    # Get all unlocks for the trainer
+    all_unlocks = trainer.unlocks.select_related('pokemon').all()
+    
+    # Count by type
+    type_counts = {}
+    for unlock in all_unlocks:
+        ptype = unlock.pokemon.type
+        type_counts[ptype] = type_counts.get(ptype, 0) + 1
+    
+    # Count total and shiny
+    total_unlocked = all_unlocks.count()
+    shiny_count = all_unlocks.filter(shiny=True).count()
+    
+    # Count by rarity
+    rarity_counts = {}
+    for unlock in all_unlocks:
+        rarity = unlock.pokemon.rarity
+        rarity_counts[rarity] = rarity_counts.get(rarity, 0) + 1
+    
+    # Badge sprite base URL from PokeAPI
+    badge_base_url = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges"
+    
+    # Get team count
+    team_count = trainer.team.members.count() if hasattr(trainer, 'team') else 0
+    
+    # Define achievements with PNG badges from PokeAPI
+    achievements = [
+        # Collection milestones
+        {
+            'id': 'collect_10',
+            'name': 'Novice Collector',
+            'description': 'Collect 10 different Pokémon',
+            'requirement': 10,
+            'current': total_unlocked,
+            'badge_url': f'{badge_base_url}/1.png',
+            'category': 'collection',
+        },
+        {
+            'id': 'collect_25',
+            'name': 'Rising Trainer',
+            'description': 'Collect 25 different Pokémon',
+            'requirement': 25,
+            'current': total_unlocked,
+            'badge_url': f'{badge_base_url}/6.png',
+            'category': 'collection',
+        },
+        {
+            'id': 'collect_50',
+            'name': 'Skilled Trainer',
+            'description': 'Collect 50 different Pokémon',
+            'requirement': 50,
+            'current': total_unlocked,
+            'badge_url': f'{badge_base_url}/4.png',
+            'category': 'collection',
+        },
+        {
+            'id': 'collect_75',
+            'name': 'Expert Collector',
+            'description': 'Collect 75 different Pokémon',
+            'requirement': 75,
+            'current': total_unlocked,
+            'badge_url': f'{badge_base_url}/3.png',
+            'category': 'collection',
+        },
+        {
+            'id': 'collect_100',
+            'name': 'Master Collector',
+            'description': 'Collect 100 different Pokémon',
+            'requirement': 100,
+            'current': total_unlocked,
+            'badge_url': f'{badge_base_url}/2.png',
+            'category': 'collection',
+        },
+        {
+            'id': 'collect_150',
+            'name': 'Pokemon Master',
+            'description': 'Collect 150 different Pokémon',
+            'requirement': 150,
+            'current': total_unlocked,
+            'badge_url': f'{badge_base_url}/9.png',
+            'category': 'collection',
+        },
+        # Type-specific achievements
+        {
+            'id': 'fire_3',
+            'name': 'Fire Beginner',
+            'description': 'Collect 3 Fire-type Pokémon',
+            'requirement': 3,
+            'current': type_counts.get('Fire', 0),
+            'badge_url': f'{badge_base_url}/20.png',
+            'category': 'type',
+        },
+        {
+            'id': 'fire_5',
+            'name': 'Fire Champion',
+            'description': 'Collect 5 Fire-type Pokémon',
+            'requirement': 5,
+            'current': type_counts.get('Fire', 0),
+            'badge_url': f'{badge_base_url}/20.png',
+            'category': 'type',
+        },
+        {
+            'id': 'fire_10',
+            'name': 'Fire Master',
+            'description': 'Collect 10 Fire-type Pokémon',
+            'requirement': 10,
+            'current': type_counts.get('Fire', 0),
+            'badge_url': f'{badge_base_url}/20.png',
+            'category': 'type',
+        },
+        {
+            'id': 'water_3',
+            'name': 'Water Beginner',
+            'description': 'Collect 3 Water-type Pokémon',
+            'requirement': 3,
+            'current': type_counts.get('Water', 0),
+            'badge_url': f'{badge_base_url}/24.png',
+            'category': 'type',
+        },
+        {
+            'id': 'water_5',
+            'name': 'Water Champion',
+            'description': 'Collect 5 Water-type Pokémon',
+            'requirement': 5,
+            'current': type_counts.get('Water', 0),
+            'badge_url': f'{badge_base_url}/24.png',
+            'category': 'type',
+        },
+        {
+            'id': 'water_10',
+            'name': 'Water Master',
+            'description': 'Collect 10 Water-type Pokémon',
+            'requirement': 10,
+            'current': type_counts.get('Water', 0),
+            'badge_url': f'{badge_base_url}/24.png',
+            'category': 'type',
+        },
+        {
+            'id': 'grass_3',
+            'name': 'Grass Beginner',
+            'description': 'Collect 3 Grass-type Pokémon',
+            'requirement': 3,
+            'current': type_counts.get('Grass', 0),
+            'badge_url': f'{badge_base_url}/26.png',
+            'category': 'type',
+        },
+        {
+            'id': 'grass_5',
+            'name': 'Grass Champion',
+            'description': 'Collect 5 Grass-type Pokémon',
+            'requirement': 5,
+            'current': type_counts.get('Grass', 0),
+            'badge_url': f'{badge_base_url}/26.png',
+            'category': 'type',
+        },
+        {
+            'id': 'electric_3',
+            'name': 'Electric Beginner',
+            'description': 'Collect 3 Electric-type Pokémon',
+            'requirement': 3,
+            'current': type_counts.get('Electric', 0),
+            'badge_url': f'{badge_base_url}/19.png',
+            'category': 'type',
+        },
+        {
+            'id': 'electric_5',
+            'name': 'Electric Champion',
+            'description': 'Collect 5 Electric-type Pokémon',
+            'requirement': 5,
+            'current': type_counts.get('Electric', 0),
+            'badge_url': f'{badge_base_url}/19.png',
+            'category': 'type',
+        },
+        {
+            'id': 'psychic_3',
+            'name': 'Psychic Beginner',
+            'description': 'Collect 3 Psychic-type Pokémon',
+            'requirement': 3,
+            'current': type_counts.get('Psychic', 0),
+            'badge_url': f'{badge_base_url}/23.png',
+            'category': 'type',
+        },
+        {
+            'id': 'psychic_5',
+            'name': 'Psychic Champion',
+            'description': 'Collect 5 Psychic-type Pokémon',
+            'requirement': 5,
+            'current': type_counts.get('Psychic', 0),
+            'badge_url': f'{badge_base_url}/23.png',
+            'category': 'type',
+        },
+        {
+            'id': 'ghost_3',
+            'name': 'Ghost Beginner',
+            'description': 'Collect 3 Ghost-type Pokémon',
+            'requirement': 3,
+            'current': type_counts.get('Ghost', 0),
+            'badge_url': f'{badge_base_url}/16.png',
+            'category': 'type',
+        },
+        {
+            'id': 'ghost_5',
+            'name': 'Ghost Champion',
+            'description': 'Collect 5 Ghost-type Pokémon',
+            'requirement': 5,
+            'current': type_counts.get('Ghost', 0),
+            'badge_url': f'{badge_base_url}/16.png',
+            'category': 'type',
+        },
+        {
+            'id': 'dragon_3',
+            'name': 'Dragon Beginner',
+            'description': 'Collect 3 Dragon-type Pokémon',
+            'requirement': 3,
+            'current': type_counts.get('Dragon', 0),
+            'badge_url': f'{badge_base_url}/16.png',
+            'category': 'type',
+        },
+        {
+            'id': 'dragon_5',
+            'name': 'Dragon Champion',
+            'description': 'Collect 5 Dragon-type Pokémon',
+            'requirement': 5,
+            'current': type_counts.get('Dragon', 0),
+            'badge_url': f'{badge_base_url}/16.png',
+            'category': 'type',
+        },
+        {
+            'id': 'steel_3',
+            'name': 'Steel Beginner',
+            'description': 'Collect 3 Steel-type Pokémon',
+            'requirement': 3,
+            'current': type_counts.get('Steel', 0),
+            'badge_url': f'{badge_base_url}/21.png',
+            'category': 'type',
+        },
+        {
+            'id': 'steel_5',
+            'name': 'Steel Champion',
+            'description': 'Collect 5 Steel-type Pokémon',
+            'requirement': 5,
+            'current': type_counts.get('Steel', 0),
+            'badge_url': f'{badge_base_url}/21.png',
+            'category': 'type',
+        },
+        {
+            'id': 'fairy_3',
+            'name': 'Fairy Beginner',
+            'description': 'Collect 3 Fairy-type Pokémon',
+            'requirement': 3,
+            'current': type_counts.get('Fairy', 0),
+            'badge_url': f'{badge_base_url}/29.png',
+            'category': 'type',
+        },
+        {
+            'id': 'fairy_5',
+            'name': 'Fairy Champion',
+            'description': 'Collect 5 Fairy-type Pokémon',
+            'requirement': 5,
+            'current': type_counts.get('Fairy', 0),
+            'badge_url': f'{badge_base_url}/29.png',
+            'category': 'type',
+        },
+        # Rarity achievements
+        {
+            'id': 'common_10',
+            'name': 'Common Collector',
+            'description': 'Collect 10 Common Pokémon',
+            'requirement': 10,
+            'current': rarity_counts.get('Common', 0),
+            'badge_url': f'{badge_base_url}/1.png',
+            'category': 'rarity',
+        },
+        {
+            'id': 'uncommon_10',
+            'name': 'Uncommon Hunter',
+            'description': 'Collect 10 Uncommon Pokémon',
+            'requirement': 10,
+            'current': rarity_counts.get('Uncommon', 0),
+            'badge_url': f'{badge_base_url}/1.png',
+            'category': 'rarity',
+        },
+        {
+            'id': 'rare_5',
+            'name': 'Rare Finder',
+            'description': 'Collect 5 Rare Pokémon',
+            'requirement': 5,
+            'current': rarity_counts.get('Rare', 0),
+            'badge_url': f'{badge_base_url}/1.png',
+            'category': 'rarity',
+        },
+        {
+            'id': 'rare_10',
+            'name': 'Rare Collector',
+            'description': 'Collect 10 Rare Pokémon',
+            'requirement': 10,
+            'current': rarity_counts.get('Rare', 0),
+            'badge_url': f'{badge_base_url}/5.png',
+            'category': 'rarity',
+        },
+        {
+            'id': 'epic_3',
+            'name': 'Epic Seeker',
+            'description': 'Collect 3 Epic Pokémon',
+            'requirement': 3,
+            'current': rarity_counts.get('Epic', 0),
+            'badge_url': f'{badge_base_url}/5.png',
+            'category': 'rarity',
+        },
+        {
+            'id': 'epic_5',
+            'name': 'Epic Collector',
+            'description': 'Collect 5 Epic Pokémon',
+            'requirement': 5,
+            'current': rarity_counts.get('Epic', 0),
+            'badge_url': f'{badge_base_url}/5.png',
+            'category': 'rarity',
+        },
+        {
+            'id': 'legendary_1',
+            'name': 'Legendary Encounter',
+            'description': 'Catch your first Legendary Pokémon',
+            'requirement': 1,
+            'current': rarity_counts.get('Legendary', 0),
+            'badge_url': f'{badge_base_url}/8.png',
+            'category': 'rarity',
+        },
+        {
+            'id': 'legendary_3',
+            'name': 'Legendary Hunter',
+            'description': 'Catch 3 Legendary Pokémon',
+            'requirement': 3,
+            'current': rarity_counts.get('Legendary', 0),
+            'badge_url': f'{badge_base_url}/7.png',
+            'category': 'rarity',
+        },
+        {
+            'id': 'legendary_5',
+            'name': 'Legendary Master',
+            'description': 'Catch 5 Legendary Pokémon',
+            'requirement': 5,
+            'current': rarity_counts.get('Legendary', 0),
+            'badge_url': f'{badge_base_url}/7.png',
+            'category': 'rarity',
+        },
+        # Shiny achievements
+        {
+            'id': 'shiny_1',
+            'name': 'Shiny Discovery',
+            'description': 'Catch your first Shiny Pokémon',
+            'requirement': 1,
+            'current': shiny_count,
+            'badge_url': f'{badge_base_url}/2.png',
+            'category': 'shiny',
+        },
+        {
+            'id': 'shiny_3',
+            'name': 'Shiny Seeker',
+            'description': 'Catch 3 Shiny Pokémon',
+            'requirement': 3,
+            'current': shiny_count,
+            'badge_url': f'{badge_base_url}/2.png',
+            'category': 'shiny',
+        },
+        {
+            'id': 'shiny_5',
+            'name': 'Shiny Hunter',
+            'description': 'Catch 5 Shiny Pokémon',
+            'requirement': 5,
+            'current': shiny_count,
+            'badge_url': f'{badge_base_url}/3.png',
+            'category': 'shiny',
+        },
+        {
+            'id': 'shiny_10',
+            'name': 'Shiny Master',
+            'description': 'Catch 10 Shiny Pokémon',
+            'requirement': 10,
+            'current': shiny_count,
+            'badge_url': f'{badge_base_url}/9.png',
+            'category': 'shiny',
+        },
+        {
+            'id': 'shiny_25',
+            'name': 'Shiny Legend',
+            'description': 'Catch 25 Shiny Pokémon',
+            'requirement': 25,
+            'current': shiny_count,
+            'badge_url': f'{badge_base_url}/9.png',
+            'category': 'shiny',
+        },
+        # Level achievements
+        {
+            'id': 'level_3',
+            'name': 'Newcomer',
+            'description': 'Reach Level 3',
+            'requirement': 3,
+            'current': trainer.level,
+            'badge_url': f'{badge_base_url}/11.png',
+            'category': 'level',
+        },
+        {
+            'id': 'level_5',
+            'name': 'Beginner Trainer',
+            'description': 'Reach Level 5',
+            'requirement': 5,
+            'current': trainer.level,
+            'badge_url': f'{badge_base_url}/11.png',
+            'category': 'level',
+        },
+        {
+            'id': 'level_10',
+            'name': 'Rising Star',
+            'description': 'Reach Level 10',
+            'requirement': 10,
+            'current': trainer.level,
+            'badge_url': f'{badge_base_url}/13.png',
+            'category': 'level',
+        },
+        {
+            'id': 'level_15',
+            'name': 'Advanced Trainer',
+            'description': 'Reach Level 15',
+            'requirement': 15,
+            'current': trainer.level,
+            'badge_url': f'{badge_base_url}/13.png',
+            'category': 'level',
+        },
+        {
+            'id': 'level_20',
+            'name': 'Skilled Trainer',
+            'description': 'Reach Level 20',
+            'requirement': 20,
+            'current': trainer.level,
+            'badge_url': f'{badge_base_url}/14.png',
+            'category': 'level',
+        },
+        {
+            'id': 'level_25',
+            'name': 'Veteran Trainer',
+            'description': 'Reach Level 25',
+            'requirement': 25,
+            'current': trainer.level,
+            'badge_url': f'{badge_base_url}/14.png',
+            'category': 'level',
+        },
+        {
+            'id': 'level_35',
+            'name': 'Expert Trainer',
+            'description': 'Reach Level 35',
+            'requirement': 35,
+            'current': trainer.level,
+            'badge_url': f'{badge_base_url}/15.png',
+            'category': 'level',
+        },
+        {
+            'id': 'level_50',
+            'name': 'Elite Trainer',
+            'description': 'Reach Level 50',
+            'requirement': 50,
+            'current': trainer.level,
+            'badge_url': f'{badge_base_url}/15.png',
+            'category': 'level',
+        },
+        {
+            'id': 'level_75',
+            'name': 'Champion',
+            'description': 'Reach Level 75',
+            'requirement': 75,
+            'current': trainer.level,
+            'badge_url': f'{badge_base_url}/15.png',
+            'category': 'level',
+        },
+        # Team achievements
+        {
+            'id': 'team_3',
+            'name': 'Team Builder',
+            'description': 'Have 3 Pokémon on your team',
+            'requirement': 3,
+            'current': team_count,
+            'badge_url': f'{badge_base_url}/1.png',
+            'category': 'team',
+        },
+        {
+            'id': 'team_6',
+            'name': 'Full Team',
+            'description': 'Fill your team with 6 Pokémon',
+            'requirement': 6,
+            'current': team_count,
+            'badge_url': f'{badge_base_url}/6.png',
+            'category': 'team',
+        },
+    ]
+    
+    # Calculate unlocked count
+    unlocked_count = sum(1 for a in achievements if a['current'] >= a['requirement'])
+    
+    context = {
+        'trainer': trainer,
+        'achievements': achievements,
+        'unlocked_count': unlocked_count,
+        'total_count': len(achievements),
+    }
+    return render(request, 'pokemon/achievements.html', context)
 
 
 def signup(request):
@@ -508,7 +1086,10 @@ def safari_zone(request):
         trainer = request.user.trainer
     except Trainer.DoesNotExist:
         return redirect('pokemon:create_trainer')
-    
+
+    # Get the trainer's team
+    team = trainer.team
+
     # Check if we need to generate new weather (every 5 minutes)
     # Store weather in session with timestamp
     session = request.session
@@ -549,7 +1130,7 @@ def safari_zone(request):
             safari_pokemon.append({
                 'pokemon_id': pokemon.id,
                 'pokemon_name': pokemon.name,
-                'pokemon_sprite': pokemon.sprite_url,
+                'pokemon_sprite': pokemon.showdown_url,
                 'pokemon_rarity': pokemon.rarity,
                 'duration': random.randint(10, 30),
                 'left': random.randint(10, 80),
@@ -716,3 +1297,189 @@ def catch_pokemon(request, pokemon_id):
             'message': f'{pokemon.name} doesn\'t want to get caught and ran away!',
             'pokeballs': trainer.pokeball_count,
         })
+
+
+@login_required
+def admin_panel(request):
+    """Admin panel for Lounelle to manage the game."""
+    try:
+        trainer = request.user.trainer
+    except Trainer.DoesNotExist:
+        return redirect('pokemon:create_trainer')
+    
+    # Check if user is Lounelle (admin)
+    if trainer.user.username != 'Lounelle':
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('pokemon:dashboard')
+    
+    all_trainers = Trainer.objects.all().select_related('user')
+    
+    # Get shiny luck value (default is 1)
+    shiny_luck = getattr(trainer, 'shiny_luck', 1)
+    
+    context = {
+        'trainer': trainer,
+        'all_trainers': all_trainers,
+        'shiny_luck': shiny_luck,
+    }
+    return render(request, 'pokemon/admin_panel.html', context)
+
+
+@login_required
+def admin_give_eggs(request):
+    """Admin: Give eggs to all trainers."""
+    try:
+        trainer = request.user.trainer
+    except Trainer.DoesNotExist:
+        return redirect('pokemon:create_trainer')
+    
+    if trainer.user.username != 'Lounelle':
+        messages.error(request, 'You do not have permission to do this.')
+        return redirect('pokemon:dashboard')
+    
+    if request.method == 'POST':
+        egg_count = int(request.POST.get('egg_count', 1))
+        
+        # Give to all trainers
+        all_trainers = Trainer.objects.all()
+        for t in all_trainers:
+            t.egg_count += egg_count
+            t.save()
+        messages.success(request, f'Gave {egg_count} egg(s) to all trainers.')
+    
+    return redirect('pokemon:admin_panel')
+
+
+@login_required
+def admin_give_pokeballs(request):
+    """Admin: Give pokeballs to all trainers."""
+    try:
+        trainer = request.user.trainer
+    except Trainer.DoesNotExist:
+        return redirect('pokemon:create_trainer')
+    
+    if trainer.user.username != 'Lounelle':
+        messages.error(request, 'You do not have permission to do this.')
+        return redirect('pokemon:dashboard')
+    
+    if request.method == 'POST':
+        pokeball_count = int(request.POST.get('pokeball_count', 10))
+        
+        # Give to all trainers
+        all_trainers = Trainer.objects.all()
+        for t in all_trainers:
+            t.pokeball_count += pokeball_count
+            t.save()
+        messages.success(request, f'Gave {pokeball_count} pokeball(s) to all trainers.')
+    
+    return redirect('pokemon:admin_panel')
+
+
+@login_required
+def admin_give_coins(request):
+    """Admin: Give PokeHunt Coins to all trainers."""
+    try:
+        trainer = request.user.trainer
+    except Trainer.DoesNotExist:
+        return redirect('pokemon:create_trainer')
+    
+    if trainer.user.username != 'Lounelle':
+        messages.error(request, 'You do not have permission to do this.')
+        return redirect('pokemon:dashboard')
+    
+    if request.method == 'POST':
+        coin_count = int(request.POST.get('coin_count', 100))
+        
+        # Give to all trainers
+        all_trainers = Trainer.objects.all()
+        for t in all_trainers:
+            t.hunt_coins += coin_count
+            t.save()
+        messages.success(request, f'Gave {coin_count} PokeHunt Coins to all trainers.')
+    
+    return redirect('pokemon:admin_panel')
+
+
+@login_required
+def admin_toggle_shiny(request):
+    """Admin: Toggle shiny status for a trainer's pokemon."""
+    try:
+        trainer = request.user.trainer
+    except Trainer.DoesNotExist:
+        return redirect('pokemon:create_trainer')
+    
+    if trainer.user.username != 'Lounelle':
+        messages.error(request, 'You do not have permission to do this.')
+        return redirect('pokemon:dashboard')
+    
+    if request.method == 'POST':
+        # Toggle global shiny luck (100% shiny mode)
+        current_shiny_luck = getattr(trainer, 'shiny_luck', 1)
+        if current_shiny_luck >= 100:
+            trainer.shiny_luck = 1
+            messages.success(request, 'Disabled 100% Shiny mode.')
+        else:
+            trainer.shiny_luck = 100
+            messages.success(request, 'Enabled 100% Shiny mode! All hatched/caught Pokemon will be shiny!')
+        trainer.save()
+    
+    return redirect('pokemon:admin_panel')
+
+
+@login_required
+def shop(request):
+    """Shop view for purchasing items with Hunt Coins."""
+    try:
+        trainer = request.user.trainer
+    except Trainer.DoesNotExist:
+        return redirect('pokemon:create_trainer')
+    
+    team = trainer.team
+    
+    # Get all active shop items
+    shop_items = ShopItem.objects.filter(is_active=True)
+    
+    context = {
+        'trainer': trainer,
+        'team_size': team.members.count(),
+        'max_team_size': trainer.max_team_size,
+        'shop_items': shop_items,
+    }
+    return render(request, 'pokemon/shop.html', context)
+
+
+@login_required
+def inventory(request):
+    """Inventory view showing user's owned items."""
+    try:
+        trainer = request.user.trainer
+    except Trainer.DoesNotExist:
+        return redirect('pokemon:create_trainer')
+    
+    filter_category = request.GET.get('category', 'all')
+    inventory_items = trainer.inventory.all()
+    
+    if filter_category != 'all':
+        inventory_items = inventory_items.filter(category=filter_category)
+    
+    category_counts = {
+        'all': trainer.inventory.count(),
+        'pokeball': trainer.inventory.filter(category='pokeball').count(),
+        'berry': trainer.inventory.filter(category='berry').count(),
+        'potion': trainer.inventory.filter(category='potion').count(),
+        'status_heal': trainer.inventory.filter(category='status_heal').count(),
+        'evolution': trainer.inventory.filter(category='evolution').count(),
+        'vitamin': trainer.inventory.filter(category='vitamin').count(),
+        'exp': trainer.inventory.filter(category='exp').count(),
+        'egg': trainer.inventory.filter(category='egg').count(),
+    }
+    
+    context = {
+        'trainer': trainer,
+        'team_size': trainer.team.members.count(),
+        'max_team_size': trainer.max_team_size,
+        'inventory_items': inventory_items,
+        'filter_category': filter_category,
+        'category_counts': category_counts,
+    }
+    return render(request, 'pokemon/inventory.html', context)

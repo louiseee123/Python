@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achievements - Pokémon Trainer</title>
+    <link rel="stylesheet" href="{% static 'pokemon/background.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; }
+        
+        .navbar { background: rgba(0,0,0,0.3); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-brand { font-size: 1.5rem; font-weight: bold; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; transition: all 0.3s; }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); }
+        .nav-links a.active { background: rgba(78,205,196,0.3); }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+        
+        .achievements-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            border-radius: 25px; padding: 40px; margin-bottom: 30px;
+            text-align: center; position: relative; overflow: hidden;
+        }
+        .achievements-header::before {
+            content: ''; position: absolute; top: -50%; left: -10%;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .achievements-header::after {
+            content: ''; position: absolute; bottom: -30%; right: -10%;
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(78,205,196,0.2) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .achievements-title { font-size: 3rem; margin-bottom: 10px; position: relative; z-index: 2; }
+        .achievements-subtitle { font-size: 1.2rem; opacity: 0.8; position: relative; z-index: 2; }
+        .achievements-count { font-size: 1.5rem; margin-top: 20px; position: relative; z-index: 2; }
+        .achievements-count span { color: #ffd700; font-weight: bold; }
+        
+        .category-section { margin-bottom: 40px; }
+        .category-title { 
+            font-size: 1.5rem; margin-bottom: 20px; padding-bottom: 10px; 
+            border-bottom: 3px solid rgba(255,255,255,0.3);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .category-title.collection { border-color: #ffd700; }
+        .category-title.type { border-color: #ff6b6b; }
+        .category-title.rarity { border-color: #9b59b6; }
+        .category-title.shiny { border-color: #ff69b4; }
+        .category-title.level { border-color: #3498db; }
+        
+        .achievements-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;
+        }
+        
+        .achievement-card {
+            background: linear-gradient(145deg, #2d2d44, #1e1e32);
+            border-radius: 15px; padding: 20px; text-align: center;
+            transition: all 0.3s; border: 3px solid #3d3d5c;
+            position: relative; overflow: hidden;
+        }
+        .achievement-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+        .achievement-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+        .achievement-card.unlocked {
+            border-color: #ffd700;
+            background: linear-gradient(145deg, #3d3520, #2a2415);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.3);
+        }
+        .achievement-card.unlocked::before {
+            background: linear-gradient(90deg, #ffd700, #ff8c00, #ffd700);
+            height: 4px;
+        }
+        .achievement-card.unlocked:hover {
+            box-shadow: 0 15px 35px rgba(255,215,0,0.4);
+        }
+        .achievement-card.locked { opacity: 0.5; }
+        
+        .achievement-badge {
+            width: 96px; height: 96px; margin: 0 auto 15px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.3); border-radius: 50%;
+            border: 3px solid #4a4a6a;
+            transition: all 0.3s;
+        }
+        .achievement-card.unlocked .achievement-badge {
+            border-color: #ffd700;
+            background: linear-gradient(145deg, rgba(255,215,0,0.2), rgba(0,0,0,0.3));
+            box-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+        .achievement-badge img {
+            width: 72px; height: 72px; object-fit: contain;
+            image-rendering: pixelated;
+        }
+        .achievement-card.locked .achievement-badge img {
+            filter: grayscale(100%) brightness(0.3);
+        }
+        
+        .achievement-name { 
+            font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; 
+            min-height: 44px; display: flex; align-items: center; justify-content: center;
+        }
+        .achievement-desc { 
+            font-size: 0.85rem; opacity: 0.7; margin-bottom: 15px; 
+            min-height: 36px; line-height: 1.3;
+        }
+        
+        .achievement-progress {
+            background: rgba(0,0,0,0.4); border-radius: 10px; height: 10px; overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .achievement-progress-fill {
+            height: 100%; border-radius: 10px; transition: width 0.5s;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        .achievement-card.unlocked .achievement-progress-fill { 
+            background: linear-gradient(90deg, #ffd700, #ff8c00); 
+        }
+        
+        .achievement-progress-text { 
+            font-size: 0.85rem; opacity: 0.8; 
+            display: flex; justify-content: space-between;
+        }
+        .achievement-card.unlocked .achievement-progress-text { color: #ffd700; font-weight: bold; }
+        
+        .achievement-status {
+            margin-top: 10px; padding: 5px 12px; border-radius: 15px;
+            font-size: 0.75rem; font-weight: bold; text-transform: uppercase;
+            display: inline-block;
+        }
+        .achievement-card.unlocked .achievement-status {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #1a1a1a;
+        }
+        .achievement-card.locked .achievement-status {
+            background: rgba(255,255,255,0.1);
+            color: #888;
+        }
+        
+        .back-btn {
+            display: inline-block; padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; text-decoration: none; border-radius: 25px;
+            font-weight: bold; margin-bottom: 20px; transition: all 0.3s;
+        }
+        .back-btn:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-links">
+            <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
+            <a href="{% url 'pokemon:pokedex' %}">Pokédex</a>
+            <a href="{% url 'pokemon:my_team' %}">My Team</a>
+            <a href="{% url 'pokemon:profile' %}">Profile</a>
+            <a href="{% url 'pokemon:shop' %}">Shop</a>
+            <a href="{% url 'pokemon:safari_zone' %}">Safari Zone</a>
+            <a href="{% url 'pokemon:inventory' %}">Inventory</a>
+            <a href="{% url 'pokemon:achievements' %}" class="active">Achievements</a>
+            <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+            </a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <a href="{% url 'pokemon:profile' %}" class="back-btn">← Back to Profile</a>
+        
+        <div class="achievements-header">
+            <h1 class="achievements-title">🏆 Achievements</h1>
+            <p class="achievements-subtitle">Track your progress and earn badges!</p>
+            <p class="achievements-count"><span>{{ unlocked_count }}</span> / {{ total_count }} Achievements Unlocked</p>
+        </div>
+        
+        {% regroup achievements by category as achievements_by_category %}
+        {% for category in achievements_by_category %}
+        <div class="category-section">
+            <h2 class="category-title {{ category.grouper }}">
+                {% if category.grouper == 'collection' %}📚 Collection{% endif %}
+                {% if category.grouper == 'type' %}⚔️ Type Champions{% endif %}
+                {% if category.grouper == 'rarity' %}💎 Rarity{% endif %}
+                {% if category.grouper == 'shiny' %}✨ Shiny{% endif %}
+                {% if category.grouper == 'level' %}⭐ Level{% endif %}
+            </h2>
+            <div class="achievements-grid">
+                {% for achievement in category.list %}
+                <div class="achievement-card {% if achievement.current >= achievement.requirement %}unlocked{% else %}locked{% endif %}">
+                    <div class="achievement-badge">
+                        <img src="{{ achievement.badge_url }}" alt="{{ achievement.name }}">
+                    </div>
+                    <h3 class="achievement-name">{{ achievement.name }}</h3>
+                    <p class="achievement-desc">{{ achievement.description }}</p>
+                    <div class="achievement-progress">
+                        <div class="achievement-progress-fill" style="width: {% widthratio achievement.current 1 achievement.requirement %}%"></div>
+                    </div>
+                    <div class="achievement-progress-text">
+                        <span>{{ achievement.current }}</span>
+                        <span>/ {{ achievement.requirement }}</span>
+                    </div>
+                    <span class="achievement-status">
+                        {% if achievement.current >= achievement.requirement %}Unlocked{% else %}Locked{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

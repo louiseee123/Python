@@ -1,0 +1,574 @@
+{% load static %}
+{% load pokextras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokedex - Pokemon Trainer</title>
+    <link rel="stylesheet" href="{% static 'pokemon/background.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; }
+        
+        .navbar { 
+            background: rgba(0, 0, 0, 0.3); 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .nav-brand { font-size: 1.5rem; font-weight: bold; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { 
+            color: white; 
+            text-decoration: none; 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            transition: all 0.3s; 
+        }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); }
+        .nav-links a.active { background: rgba(78,205,196,0.3); }
+        .logout-icon { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .logout-icon:hover { 
+            background: rgba(255,100,100,0.3); 
+            transform: scale(1.1); 
+        }
+        .logout-icon svg { 
+            width: 20px; 
+            height: 20px; 
+            fill: white; 
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px; }
+        
+        .page-header { text-align: center; margin-bottom: 25px; }
+        .page-header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        
+        .pokedex-stats {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .pokedex-stats span {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+        }
+        
+        /* Filter Bar */
+        .filter-bar { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 12px; 
+            margin-bottom: 25px; 
+            padding: 20px; 
+            background: rgba(255, 255, 255, 0.05); 
+            border-radius: 15px; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .search-box { 
+            flex: 1; 
+            min-width: 200px; 
+            max-width: 350px; 
+            position: relative; 
+        }
+        .search-box input { 
+            width: 100%; 
+            padding: 12px 15px 12px 45px; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 25px; 
+            background: rgba(255, 255, 255, 0.1); 
+            color: white; 
+            font-size: 0.95rem; 
+            transition: all 0.3s ease; 
+        }
+        .search-box input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .search-box input:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            background: rgba(255, 255, 255, 0.15); 
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); 
+        }
+        .search-box::before { 
+            content: '🔍'; 
+            position: absolute; 
+            left: 15px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            font-size: 1rem; 
+        }
+        
+        .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-label { 
+            font-size: 0.85rem; 
+            opacity: 0.7; 
+            margin-right: 5px;
+        }
+        .filter-btn { 
+            padding: 8px 16px; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 20px; 
+            background: rgba(255, 255, 255, 0.05); 
+            color: rgba(255, 255, 255, 0.7); 
+            font-size: 0.8rem; 
+            font-weight: 500; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+        }
+        .filter-btn:hover, .filter-btn.active { 
+            background: rgba(102, 126, 234, 0.3); 
+            border-color: #667eea; 
+            color: white; 
+        }
+        
+        /* Pokemon Grid - Smaller cards like my_team */
+        .pokemon-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        /* Pokemon Card - Smaller size like my_team */
+        .pokemon-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            min-width: 140px;
+            max-width: 160px;
+            flex: 1 ;
+            transition:1 140px all 0.3s ease;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        .pokemon-card:hover { 
+            transform: translateY(-5px); 
+            background: rgba(255, 255, 255, 0.1); 
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3); 
+        }
+        
+        /* Type-specific gradients */
+        .pokemon-card.type-fire { background: linear-gradient(135deg, rgba(238, 129, 48, 0.2) 0%, rgba(238, 129, 48, 0.05) 100%); border: 1px solid rgba(238, 129, 48, 0.4); }
+        .pokemon-card.type-water { background: linear-gradient(135deg, rgba(99, 144, 240, 0.2) 0%, rgba(99, 144, 240, 0.05) 100%); border: 1px solid rgba(99, 144, 240, 0.4); }
+        .pokemon-card.type-grass { background: linear-gradient(135deg, rgba(122, 199, 76, 0.2) 0%, rgba(122, 199, 76, 0.05) 100%); border: 1px solid rgba(122, 199, 76, 0.4); }
+        .pokemon-card.type-electric { background: linear-gradient(135deg, rgba(247, 208, 44, 0.2) 0%, rgba(247, 208, 44, 0.05) 100%); border: 1px solid rgba(247, 208, 44, 0.4); }
+        .pokemon-card.type-ice { background: linear-gradient(135deg, rgba(150, 217, 214, 0.2) 0%, rgba(150, 217, 214, 0.05) 100%); border: 1px solid rgba(150, 217, 214, 0.4); }
+        .pokemon-card.type-fighting { background: linear-gradient(135deg, rgba(191, 97, 106, 0.2) 0%, rgba(191, 97, 106, 0.05) 100%); border: 1px solid rgba(191, 97, 106, 0.4); }
+        .pokemon-card.type-poison { background: linear-gradient(135deg, rgba(163, 62, 161, 0.2) 0%, rgba(163, 62, 161, 0.05) 100%); border: 1px solid rgba(163, 62, 161, 0.4); }
+        .pokemon-card.type-ground { background: linear-gradient(135deg, rgba(226, 191, 101, 0.2) 0%, rgba(226, 191, 101, 0.05) 100%); border: 1px solid rgba(226, 191, 101, 0.4); }
+        .pokemon-card.type-flying { background: linear-gradient(135deg, rgba(169, 143, 243, 0.2) 0%, rgba(169, 143, 243, 0.05) 100%); border: 1px solid rgba(169, 143, 243, 0.4); }
+        .pokemon-card.type-psychic { background: linear-gradient(135deg, rgba(249, 85, 135, 0.2) 0%, rgba(249, 85, 135, 0.05) 100%); border: 1px solid rgba(249, 85, 135, 0.4); }
+        .pokemon-card.type-bug { background: linear-gradient(135deg, rgba(166, 185, 26, 0.2) 0%, rgba(166, 185, 26, 0.05) 100%); border: 1px solid rgba(166, 185, 26, 0.4); }
+        .pokemon-card.type-rock { background: linear-gradient(135deg, rgba(182, 161, 54, 0.2) 0%, rgba(182, 161, 54, 0.05) 100%); border: 1px solid rgba(182, 161, 54, 0.4); }
+        .pokemon-card.type-ghost { background: linear-gradient(135deg, rgba(115, 87, 151, 0.2) 0%, rgba(115, 87, 151, 0.05) 100%); border: 1px solid rgba(115, 87, 151, 0.4); }
+        .pokemon-card.type-dragon { background: linear-gradient(135deg, rgba(111, 53, 252, 0.2) 0%, rgba(111, 53, 252, 0.05) 100%); border: 1px solid rgba(111, 53, 252, 0.4); }
+        .pokemon-card.type-dark { background: linear-gradient(135deg, rgba(112, 87, 70, 0.2) 0%, rgba(112, 87, 70, 0.05) 100%); border: 1px solid rgba(112, 87, 70, 0.4); }
+        .pokemon-card.type-steel { background: linear-gradient(135deg, rgba(183, 183, 206, 0.2) 0%, rgba(183, 183, 206, 0.05) 100%); border: 1px solid rgba(183, 183, 206, 0.4); }
+        .pokemon-card.type-fairy { background: linear-gradient(135deg, rgba(214, 133, 173, 0.2) 0%, rgba(214, 133, 173, 0.05) 100%); border: 1px solid rgba(214, 133, 173, 0.4); }
+        .pokemon-card.type-normal { background: linear-gradient(135deg, rgba(168, 167, 122, 0.15) 0%, rgba(168, 167, 122, 0.05) 100%); border: 1px solid rgba(168, 167, 122, 0.3); }
+        
+        /* Rarity glow effects */
+        .pokemon-card.rarity-common { border-color: rgba(149, 165, 166, 0.3); }
+        .pokemon-card.rarity-uncommon { border-color: rgba(46, 204, 113, 0.3); }
+        .pokemon-card.rarity-rare { border-color: rgba(52, 152, 219, 0.3); }
+        .pokemon-card.rarity-epic { border-color: rgba(155, 89, 182, 0.3); }
+        .pokemon-card.rarity-legendary { border-color: rgba(255, 215, 0, 0.5); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
+        
+        /* Locked state */
+        .pokemon-card.locked {
+            opacity: 0.5;
+            filter: grayscale(0.5);
+        }
+        .pokemon-card.locked .member-image {
+            opacity: 0.3;
+        }
+        
+        /* Pokedex number */
+        .pokedex-number {
+            position: absolute;
+            top: 5px;
+            left: 8px;
+            font-size: 0.7rem;
+            opacity: 0.5;
+            font-weight: bold;
+        }
+        
+        /* Pokemon Image */
+        .member-image {
+            width: 70px;
+            height: 70px;
+            margin: 8px auto;
+            position: relative;
+        }
+        .member-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+            transition: all 0.3s ease;
+        }
+        .pokemon-card:hover .member-image img {
+            transform: scale(1.1);
+        }
+        
+        /* Shiny sparkle */
+        .shiny-sparkle { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            pointer-events: none; 
+            background: radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.3) 0%, transparent 70%); 
+            opacity: 0; 
+            animation: shiny-glow 2s ease-in-out infinite; 
+        }
+        .shiny-sparkle.active { opacity: 1; }
+        @keyframes shiny-glow { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.1); } }
+        
+        /* Shiny badge */
+        .shiny-badge { 
+            position: absolute; 
+            top: 5px; 
+            right: 5px; 
+            font-size: 1.2rem; 
+            animation: star-twinkle 1s ease-in-out infinite;
+            z-index: 10;
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;
+        }
+        .shiny-star { color: #ffd700; text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; }
+        @keyframes star-twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.2); } }
+        
+        /* In Team badge */
+        .in-team-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(78,205,196,0.8);
+            color: #1a1a2e;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .pokemon-name {
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+        
+        .pokemon-type {
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .pokemon-type-img {
+            width: 80px;
+            height: 30px;
+            object-fit: contain;
+            display: block;
+        }
+        
+        /* Rarity Badge */
+        .rarity-badge { 
+            display: inline-block; 
+            padding: 3px 10px; 
+            border-radius: 20px; 
+            font-size: 0.65rem; 
+            font-weight: 600; 
+            margin-top: 5px; 
+            letter-spacing: 0.5px; 
+        }
+        .rarity-common-badge { background: rgba(149, 165, 166, 0.3); border: 1px solid #95a5a6; }
+        .rarity-uncommon-badge { background: rgba(46, 204, 113, 0.3); border: 1px solid #2ecc71; }
+        .rarity-rare-badge { background: rgba(52, 152, 219, 0.3); border: 1px solid #3498db; }
+        .rarity-epic-badge { background: rgba(155, 89, 182, 0.3); border: 1px solid #9c59b6; }
+        .rarity-legendary-badge { background: linear-gradient(45deg, rgba(255, 215, 0, 0.4), rgba(255, 140, 0, 0.4)); border: 1px solid #ffd700; }
+        
+        .pokemon-card.hidden { display: none; }
+        
+        .click-hint {
+            font-size: 0.55rem;
+            opacity: 0.5;
+            margin-top: auto;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            opacity: 0.7;
+            grid-column: 1 / -1;
+            width: 100%;
+        }
+        
+        /* Rarity ribbon styles */
+        .rarity-ribbon { position: absolute; top: 0; left: 0; width: 40px; height: 40px; overflow: hidden; z-index: 5; }
+        .rarity-ribbon::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; clip-path: polygon(0 0, 100% 0, 0 100%); }
+        .rarity-ribbon.rarity-common::before { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
+        .rarity-ribbon.rarity-uncommon::before { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .rarity-ribbon.rarity-rare::before { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .rarity-ribbon.rarity-epic::before { background: linear-gradient(135deg, #9c59b6, #8e44ad); }
+        .rarity-ribbon.rarity-legendary::before { background: linear-gradient(135deg, #ffd700, #f39c12); }
+        
+        .rarity-label { 
+            position: absolute; 
+            top: 5px; 
+            left: 5px; 
+            font-size: 0.5rem; 
+            font-weight: bold; 
+            color: white; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5); 
+            z-index: 6; 
+        }
+        
+        /* Results count */
+        .results-count {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-links">
+            <a href="{% url 'pokemon:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{% url 'pokemon:pokedex' %}" class="{% if request.resolver_match.url_name == 'pokedex' %}active{% endif %}">Pokédex</a>
+            <a href="{% url 'pokemon:my_team' %}" class="{% if request.resolver_match.url_name == 'my_team' %}active{% endif %}">My Team</a>
+            <a href="{% url 'pokemon:profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a>
+            <a href="{% url 'pokemon:shop' %}" class="{% if request.resolver_match.url_name == 'shop' %}active{% endif %}">Shop</a>
+            <a href="{% url 'pokemon:safari_zone' %}" class="{% if request.resolver_match.url_name == 'safari_zone' %}active{% endif %}">Safari Zone</a>
+            <a href="{% url 'pokemon:inventory' %}" class="{% if request.resolver_match.url_name == 'inventory' %}active{% endif %}">Inventory</a>
+            <a href="{% url 'pokemon:achievements' %}" class="{% if request.resolver_match.url_name == 'achievements' %}active{% endif %}">Achievements</a>
+            <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+            </a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>Pokédex</h1>
+            <p>Your Pokemon collection</p>
+        </div>
+        
+        <div class="pokedex-stats">
+            <span>Caught: {{ unlocked_count }} / {{ total_pokemon }}</span>
+        </div>
+        
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search by name or #..." value="{{ search_query|default:'' }}">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Type:</span>
+                <button class="filter-btn active" onclick="filterByType('all', this)">All</button>
+                <button class="filter-btn" onclick="filterByType('Fire', this)">Fire</button>
+                <button class="filter-btn" onclick="filterByType('Water', this)">Water</button>
+                <button class="filter-btn" onclick="filterByType('Grass', this)">Grass</button>
+                <button class="filter-btn" onclick="filterByType('Electric', this)">Electric</button>
+                <button class="filter-btn" onclick="filterByType('Psychic', this)">Psychic</button>
+                <button class="filter-btn" onclick="filterByType('Ghost', this)">Ghost</button>
+                <button class="filter-btn" onclick="filterByType('Dragon', this)">Dragon</button>
+                <button class="filter-btn" onclick="filterByType('Normal', this)">Normal</button>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Rarity:</span>
+                <button class="filter-btn active" onclick="filterByRarity('all', this)">All</button>
+                <button class="filter-btn" onclick="filterByRarity('common', this)">Common</button>
+                <button class="filter-btn" onclick="filterByRarity('uncommon', this)">Uncommon</button>
+                <button class="filter-btn" onclick="filterByRarity('rare', this)">Rare</button>
+                <button class="filter-btn" onclick="filterByRarity('epic', this)">Epic</button>
+                <button class="filter-btn" onclick="filterByRarity('legendary', this)">Legendary</button>
+            </div>
+        </div>
+        
+        <div class="results-count" id="resultsCount"></div>
+        
+        <div class="pokemon-grid" id="pokemonGrid">
+            {% for item in pokemon_data %}
+            <div class="pokemon-card type-{{ item.pokemon.type|lower }} rarity-{{ item.pokemon.rarity|lower }}" 
+                 data-pokedex-number="{{ item.pokemon.pokeapi_id|default:item.pokemon.id }}"
+                 data-name="{{ item.pokemon.name|lower }}"
+                 data-type="{{ item.pokemon.type|lower }}"
+                 data-rarity="{{ item.pokemon.rarity|lower }}"
+                 data-pokemon-id="{{ item.pokemon.id }}"
+                 data-pokemon-name="{{ item.pokemon.name }}"
+                 data-pokemon-type="{{ item.pokemon.type }}"
+                 data-pokemon-rarity="{{ item.pokemon.rarity }}"
+                 data-pokemon-sprite="{{ item.pokemon.sprite_url }}"
+                 data-unlocked="{% if item.is_unlocked %}true{% else %}false{% endif %}"
+                 {% if item.is_unlocked %}onclick="window.location.href='{% url 'pokemon:pokemon_detail' item.pokemon.id %}'"{% endif %}>
+                
+                <!-- Rarity ribbon -->
+                <div class="rarity-ribbon rarity-{{ item.pokemon.rarity|lower }}">
+                    <span class="rarity-label">
+                        {% if item.pokemon.rarity == 'Common' %}C{% elif item.pokemon.rarity == 'Uncommon' %}UC{% elif item.pokemon.rarity == 'Rare' %}R{% elif item.pokemon.rarity == 'Epic' %}E{% elif item.pokemon.rarity == 'Legendary' %}L{% endif %}
+                    </span>
+                </div>
+                
+                <!-- Pokedex Number -->
+                <span class="pokedex-number">#{{ item.pokemon.pokeapi_id|default:item.pokemon.id }}</span>
+                
+                {% if item.is_unlocked %}
+                    {% if item.in_team %}
+                    <span class="in-team-badge">IN TEAM</span>
+                    {% endif %}
+                    
+                    {% if item.is_shiny %}
+                    <div class="shiny-sparkle active"></div>
+                    <span class="shiny-badge">⭐</span>
+                    {% endif %}
+                
+                <div class="member-image">
+                    {% if item.is_shiny %}
+                    <img src="{{ item.pokemon.shiny_sprite_url }}" alt="{{ item.pokemon.name }} (Shiny)">
+                    {% else %}
+                    <img src="{{ item.pokemon.sprite_url }}" alt="{{ item.pokemon.name }}">
+                    {% endif %}
+                </div>
+                <div class="pokemon-name">{{ item.pokemon.name }}</div>
+                <div class="pokemon-type">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/{{ item.pokemon.type|lower|type_to_number }}.png" alt="{{ item.pokemon.type }}" class="pokemon-type-img" onerror="this.style.display='none'">
+                </div>
+                <span class="rarity-badge rarity-{{ item.pokemon.rarity|lower }}-badge">{{ item.pokemon.rarity }}</span>
+                <p class="click-hint">Click to view</p>
+                {% else %}
+                <div class="member-image">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png" alt="???">
+                </div>
+                <div class="pokemon-name">???</div>
+                <div class="pokemon-type">
+                    <span style="opacity: 0.5;">???</span>
+                </div>
+                <span class="rarity-badge rarity-{{ item.pokemon.rarity|lower }}-badge">{{ item.pokemon.rarity }}</span>
+                <p class="click-hint">Not caught</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <h3>No Pokemon Found</h3>
+                <p>There are no Pokemon in the database yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <script>
+        // Initialize results count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateResultsCount();
+        });
+        
+        function filterPokemon() {
+            var searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
+            var cards = document.querySelectorAll('.pokemon-card');
+            var activeType = document.querySelector('.filter-group .filter-btn.active').textContent.toLowerCase();
+            var activeRarity = document.querySelectorAll('.filter-group')[1].querySelector('.filter-btn.active').textContent.toLowerCase();
+            
+            // Get all filter buttons to determine current filters
+            var typeBtns = document.querySelectorAll('.filter-group:first-child .filter-btn');
+            var rarityBtns = document.querySelectorAll('.filter-group:last-child .filter-btn');
+            
+            typeBtns.forEach(function(btn) {
+                if (btn.classList.contains('active')) {
+                    activeType = btn.textContent.toLowerCase();
+                }
+            });
+            
+            rarityBtns.forEach(function(btn) {
+                if (btn.classList.contains('active')) {
+                    activeRarity = btn.textContent.toLowerCase();
+                }
+            });
+            
+            var visibleCount = 0;
+            
+            cards.forEach(function(card) {
+                var name = card.dataset.name;
+                var pokedexNum = card.dataset.pokedexNumber;
+                var type = card.dataset.type;
+                var rarity = card.dataset.rarity;
+                var unlocked = card.dataset.unlocked === 'true';
+                
+                // Search: match name OR pokedex number
+                var matchesSearch = true;
+                if (searchInput) {
+                    // Check if search starts with # and remove it
+                    var searchTerm = searchInput.replace(/^#/, '');
+                    matchesSearch = name.includes(searchTerm) || pokedexNum === searchTerm || pokedexNum.includes(searchTerm);
+                }
+                
+                // Type filter
+                var matchesType = activeType === 'all' || type === activeType;
+                
+                // Rarity filter
+                var matchesRarity = activeRarity === 'all' || rarity === activeRarity;
+                
+                if (matchesSearch && matchesType && matchesRarity) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+            
+            // Update results count
+            document.getElementById('resultsCount').textContent = 'Showing ' + visibleCount + ' Pokemon';
+        }
+        
+        function filterByType(type, btn) {
+            // Remove active from all type buttons
+            var typeBtns = document.querySelectorAll('.filter-group:first-child .filter-btn');
+            typeBtns.forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            
+            filterPokemon();
+        }
+        
+        function filterByRarity(rarity, btn) {
+            // Remove active from all rarity buttons
+            var rarityBtns = document.querySelectorAll('.filter-group:last-child .filter-btn');
+            rarityBtns.forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            
+            filterPokemon();
+        }
+        
+        function updateResultsCount() {
+            var cards = document.querySelectorAll('.pokemon-card:not(.hidden)');
+            document.getElementById('resultsCount').textContent = 'Showing ' + cards.length + ' Pokemon';
+        }
+        
+        // Add event listener for search input
+        document.getElementById('searchInput').addEventListener('keyup', filterPokemon);
+    </script>
+</body>
+</html>

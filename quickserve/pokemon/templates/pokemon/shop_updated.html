@@ -1,0 +1,294 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop - Pokémon Trainer</title>
+    <link rel="stylesheet" href="{% static 'pokemon/background.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; }
+        
+        .navbar { background: rgba(0, 0, 0, 0.3); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-brand { font-size: 1.5rem; font-weight: bold; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 20px; transition: all 0.3s; }
+        .nav-links a:hover { background: rgba(255, 255, 255, 0.1); }
+        .nav-links a.active { background: rgba(78, 205, 196, 0.3); }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+        
+        /* Hunt Coins Header */
+        .coins-header {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #ffd700 100%);
+            border-radius: 20px;
+            padding: 25px 40px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.3);
+        }
+        .coins-header h1 {
+            color: #1a1a2e;
+            font-size: 2rem;
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+        }
+        .coins-display {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px 30px;
+            border-radius: 50px;
+        }
+        .coins-icon {
+            font-size: 2.5rem;
+        }
+        .coins-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+        .coins-label {
+            font-size: 0.9rem;
+            color: #1a1a2e;
+            opacity: 0.8;
+        }
+        
+        /* Shop Section */
+        .shop-section {
+            margin-bottom: 40px;
+        }
+        .shop-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Items Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        /* Item Card */
+        .item-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .item-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        .item-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        .item-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .item-description {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-bottom: 15px;
+            min-height: 40px;
+        }
+        .item-price {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        .item-price-icon {
+            font-size: 1.4rem;
+        }
+        .buy-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #1a1a2e;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .buy-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+        .buy-btn:disabled {
+            background: linear-gradient(135deg, #636e72, #4a5658);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Placeholder Items */
+        .placeholder-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+        .placeholder-icon {
+            font-size: 3rem;
+            opacity: 0.5;
+            margin-bottom: 10px;
+        }
+        .placeholder-text {
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+        
+        /* Coming Soon */
+        .coming-soon {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-top: 40px;
+        }
+        .coming-soon h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+        .coming-soon p {
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-links">
+            <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
+            <a href="{% url 'pokemon:pokedex' %}">Pokédex</a>
+            <a href="{% url 'pokemon:my_team' %}">My Team</a>
+            <a href="{% url 'pokemon:profile' %}">Profile</a>
+            <a href="{% url 'pokemon:shop' %}">Shop</a>
+            <a href="{% url 'pokemon:safari_zone' %}">Safari Zone</a>
+            <a href="{% url 'pokemon:inventory' %}" class="active">Inventory</a>
+            <a href="{% url 'pokemon:achievements' %}">Achievements</a>
+            <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+            </a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <!-- Hunt Coins Header -->
+        <div class="coins-header">
+            <h1>🛒 Pokemon Shop</h1>
+            <div class="coins-display">
+                <span class="coins-icon">🪙</span>
+                <div>
+                    <div class="coins-amount">{{ trainer.hunt_coins }}</div>
+                    <div class="coins-label">Hunt Coins</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Shop Items -->
+        <div class="shop-section">
+            <h2>Available Items</h2>
+            <div class="items-grid">
+                <!-- Placeholder Items - User can add images later -->
+                <div class="item-card">
+                    <div class="item-icon">🥚</div>
+                    <div class="item-name">Pokemon Egg</div>
+                    <div class="item-description">A mysterious egg that may contain a rare Pokemon!</div>
+                    <div class="item-price">
+                        <span class="item-price-icon">🪙</span>
+                        50
+                    </div>
+                    <button class="buy-btn" disabled>Coming Soon</button>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-icon">🎱</div>
+                    <div class="item-name">Premium Pokeball</div>
+                    <div class="item-description">A special pokeball with higher catch rate!</div>
+                    <div class="item-price">
+                        <span class="item-price-icon">🪙</span>
+                        100
+                    </div>
+                    <button class="buy-btn" disabled>Coming Soon</button>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-icon">⚡</div>
+                    <div class="item-name">Shiny Charm</div>
+                    <div class="item-description">Increases shiny Pokemon encounter rate!</div>
+                    <div class="item-price">
+                        <span class="item-price-icon">🪙</span>
+                        500
+                    </div>
+                    <button class="buy-btn" disabled>Coming Soon</button>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-icon">💎</div>
+                    <div class="item-name">Rare Candy</div>
+                    <div class="item-description">Instantly levels up one Pokemon!</div>
+                    <div class="item-price">
+                        <span class="item-price-icon">🪙</span>
+                        200
+                    </div>
+                    <button class="buy-btn" disabled>Coming Soon</button>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-icon">🧬</div>
+                    <div class="item-name">DNA Splicer</div>
+                    <div class="item-description">Fuse two Pokemon together!</div>
+                    <div class="item-price">
+                        <span class="item-price-icon">🪙</span>
+                        1000
+                    </div>
+                    <button class="buy-btn" disabled>Coming Soon</button>
+                </div>
+                
+                <div class="item-card">
+                    <div class="item-icon">🎭</div>
+                    <div class="item-name">Avatar Bundle</div>
+                    <div class="item-description">Special trainer avatar customization!</div>
+                    <div class="item-price">
+                        <span class="item-price-icon">🪙</span>
+                        300
+                    </div>
+                    <button class="buy-btn" disabled>Coming Soon</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coming Soon Section -->
+        <div class="coming-soon">
+            <h3>🚧 More Items Coming Soon!</h3>
+            <p>Check back later for new items and exclusive deals.</p>
+        </div>
+    </div>
+</body>
+</html>

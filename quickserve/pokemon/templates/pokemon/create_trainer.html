@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Trainer - Pokémon Trainer</title>
+    <link rel="stylesheet" href="{% static 'pokemon/background.css' %}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        p {
+            margin-bottom: 30px;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .feature-icon {
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Your Trainer</h1>
+        <p>Welcome, {{ user.username }}! Create your trainer profile to begin your Pokémon journey.</p>
+        
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">⭐</span>
+                <strong>Level Up</strong>
+                <p style="margin: 5px 0 0; font-size: 0.9rem; opacity: 0.7;">Gain XP and level up</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">👥</span>
+                <strong>Build Team</strong>
+                <p style="margin: 5px 0 0; font-size: 0.9rem; opacity: 0.7;">Collect and train Pokémon</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">📚</span>
+                <strong>Complete Tasks</strong>
+                <p style="margin: 5px 0 0; font-size: 0.9rem; opacity: 0.7;">Earn daily rewards</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🏆</span>
+                <strong>Unlock Pokemon</strong>
+                <p style="margin: 5px 0 0; font-size: 0.9rem; opacity: 0.7;">Discover new species</p>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Start Journey!</button>
+        </form>
+    </div>
+</body>
+</html>

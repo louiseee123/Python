@@ -1,0 +1,236 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokedex - Pokemon Trainer</title>
+    <link rel="stylesheet" href="{% static 'pokemon/background.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; color: white; }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-brand { font-size: 1.5rem; font-weight: bold; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); }
+        .nav-links a.active { background: rgba(78,205,196,0.3); }
+        .logout-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .logout-icon:hover {
+            background: rgba(255,100,100,0.3);
+            transform: scale(1.1);
+        }
+        .logout-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+
+        .page-header { text-align: center; margin-bottom: 30px; }
+        .page-header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        
+        .pokedex-stats {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .pokedex-stats span {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+        }
+
+        .pokemon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .pokemon-card {
+            background: linear-gradient(135deg, rgba(45,45,68,0.9), rgba(30,30,50,0.95));
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .pokemon-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
+        .pokemon-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .pokemon-card.locked {
+            opacity: 0.5;
+            filter: grayscale(0.5);
+        }
+        .pokemon-card.locked .member-image {
+            opacity: 0.3;
+        }
+
+        .member-image {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            position: relative;
+        }
+        .member-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+        }
+
+        .shiny-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #1a1a2e;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .pokemon-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .pokemon-level {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+        .pokemon-type {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        
+        .rarity-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .rarity-common { background: #6c757d; }
+        .rarity-uncommon { background: #28a745; }
+        .rarity-rare { background: #007bff; }
+        .rarity-epic { background: #6f42c1; }
+        .rarity-legendary { background: linear-gradient(45deg, #ffd700, #ff8c00); }
+
+        .pokemon-card.rarity-common { border: 2px solid #6c757d; }
+        .pokemon-card.rarity-uncommon { border: 2px solid #28a745; }
+        .pokemon-card.rarity-rare { border: 2px solid #007bff; }
+        .pokemon-card.rarity-epic { border: 2px solid #6f42c1; }
+        .pokemon-card.rarity-legendary { border: 2px solid #ffd700; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-links">
+            <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
+            <a href="{% url 'pokemon:pokedex' %}" class="active">Pokédex</a>
+            <a href="{% url 'pokemon:my_team' %}">My Team</a>
+            <a href="{% url 'pokemon:profile' %}">Profile</a>
+            <a href="{% url 'pokemon:shop' %}">Shop</a>
+            <a href="{% url 'pokemon:safari_zone' %}">Safari Zone</a>
+            <a href="{% url 'pokemon:inventory' %}">Inventory</a>
+            <a href="{% url 'pokemon:achievements' %}">Achievements</a>
+            <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+            </a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>Pokedex</h1>
+            <p>Your Pokemon collection</p>
+        </div>
+        
+        <div class="pokedex-stats">
+            <span>Caught: {{ unlocked_ids|length }} / {{ pokemon_list.count }}</span>
+        </div>
+        
+        <div class="pokemon-grid">
+            {% for pokemon in pokemon_list %}
+            {% with pokemon.id as pokemon_id %}
+            <div class="pokemon-card rarity-{{ pokemon.rarity|lower }}" onclick="window.location.href='{% url 'pokemon:pokemon_detail' pokemon.id %}'">
+                {% if pokemon_id in team_pokemon_ids %}
+                <span class="shiny-badge" style="background: rgba(78,205,196,0.8);">IN TEAM</span>
+                {% endif %}
+                <div class="member-image">
+                    {% if pokemon_id in unlocked_ids %}
+                    <img src="{{ pokemon.sprite_url }}" alt="{{ pokemon.name }}">
+                    {% else %}
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png" alt="???">
+                    {% endif %}
+                </div>
+                <div class="pokemon-name">
+                    {% if pokemon_id in unlocked_ids %}{{ pokemon.name }}{% else %}???{% endif %}
+                </div>
+                <div class="pokemon-type">{{ pokemon.type }}</div>
+                <span class="rarity-badge rarity-{{ pokemon.rarity|lower }}">{{ pokemon.rarity }}</span>
+            </div>
+            {% endwith %}
+            {% empty %}
+            <div class="empty-state">
+                <h3>No Pokemon Found</h3>
+                <p>There are no Pokemon in the database yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,193 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Pokemon Trainer</title>
+    <link rel="stylesheet" href="{% static 'pokemon/background.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; color: white; }
+        
+        .navbar { 
+            background: rgba(0, 0, 0, 0.3); 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .nav-brand { font-size: 1.5rem; font-weight: bold; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { 
+            color: white; 
+            text-decoration: none; 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            transition: all 0.3s; 
+        }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); }
+        .logout-icon { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .logout-icon:hover { 
+            background: rgba(255,100,100,0.3); 
+            transform: scale(1.1); 
+        }
+        .logout-icon svg { 
+            width: 20px; 
+            height: 20px; 
+            fill: white; 
+        }
+        
+        .container { max-width: 800px; margin: 0 auto; padding: 30px; }
+        
+        .page-header { text-align: center; margin-bottom: 30px; }
+        .page-header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        
+        .admin-card {
+            background: linear-gradient(135deg, rgba(45,45,68,0.9), rgba(30,30,50,0.95));
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .admin-card h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .form-group input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .form-group input::placeholder { color: rgba(255,255,255,0.5); }
+        
+        .submit-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .submit-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .warning-box {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .success-message {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid #28a745;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #4facfe;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Admin Panel</div>
+        <div class="nav-links">
+            <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
+            <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+            </a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>Admin Panel</h1>
+            <p>Manage your Pokemon server</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+            <div class="{% if message.tags == 'success' %}success-message{% else %}warning-box{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="admin-card">
+            <h2>Give Eggs to All Users</h2>
+            <form method="post" action="{% url 'pokemon:admin_give_eggs' %}" class="admin-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="number" name="egg_count" placeholder="Number of eggs" required min="1">
+                    <button type="submit" class="submit-btn">Give Eggs</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="admin-card">
+            <h2>Give Pokeballs to All Users</h2>
+            <form method="post" action="{% url 'pokemon:admin_give_pokeballs' %}" class="admin-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="number" name="pokeball_count" placeholder="Number of pokeballs" required min="1">
+                    <button type="submit" class="submit-btn">Give Pokeballs</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="admin-card">
+            <h2>Toggle Shiny Mode</h2>
+            <form method="post" action="{% url 'pokemon:admin_toggle_shiny' %}" class="admin-form">
+                {% csrf_token %}
+                <button type="submit" class="submit-btn">Toggle 100% Shiny</button>
+            </form>
+            <p style="margin-top: 10px; opacity: 0.7;">Current Shiny Luck: {{ trainer.shiny_luck }}%</p>
+        </div>
+        
+        <a href="{% url 'pokemon:dashboard' %}" class="back-link">← Back to Dashboard</a>
+    </div>
+</body>
+</html>

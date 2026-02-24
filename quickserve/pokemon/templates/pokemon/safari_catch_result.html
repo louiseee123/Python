@@ -1,0 +1,354 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catching Pokemon... - Pokémon Trainer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .catch-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        /* Black background with zoom effect */
+        .catch-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 5;
+        }
+        
+        .catch-bg.zoom {
+            animation: zoomIn 0.5s ease forwards;
+        }
+        
+        @keyframes zoomIn {
+            from { transform: scale(1); }
+            to { transform: scale(1.5); }
+        }
+        
+        /* Target Pokemon in center */
+        .target-pokemon {
+            position: relative;
+            z-index: 10;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .target-pokemon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            animation: pokemonShake 0.5s ease-in-out infinite;
+        }
+        
+        @keyframes pokemonShake {
+            0%, 100% { transform: translateX(0) rotate(0); }
+            25% { transform: translateX(-10px) rotate(-5deg); }
+            75% { transform: translateX(10px) rotate(5deg); }
+        }
+        
+        /* Pokeball throw */
+        .pokeball-throw {
+            position: fixed;
+            z-index: 20;
+            width: 60px;
+            height: 60px;
+            display: none;
+        }
+        
+        .pokeball-throw img {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .pokeball-throw.animate {
+            display: block;
+            animation: throwBall 1.5s ease-in forwards;
+        }
+        
+        @keyframes throwBall {
+            0% {
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            40% {
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            60% {
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            100% {
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+        }
+        
+        /* Catch success effect */
+        .catch-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 30;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .catch-effect.show {
+            display: flex;
+            animation: catchFlash 0.5s ease-out forwards;
+        }
+        
+        @keyframes catchFlash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        /* Result Card */
+        .result-card {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .result-card.show {
+            display: flex;
+            animation: cardFadeIn 0.8s ease forwards;
+        }
+        
+        @keyframes cardFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .card-content {
+            background: linear-gradient(135deg, #2d1b4e 0%, #1a1a2e 100%);
+            border: 3px solid #9b59b6;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 450px;
+            text-align: center;
+            animation: cardPopIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        @keyframes cardPopIn {
+            from { opacity: 0; transform: scale(0.8) translateY(30px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .result-card.legendary .card-content {
+            border-color: #ffd700;
+            animation: legendary-glow 2s ease-in-out infinite, cardPopIn 0.6s forwards;
+        }
+        
+        @keyframes legendary-glow {
+            0%, 100% { box-shadow: 0 0 20px #ffd700, 0 0 40px #ffa502; }
+            50% { box-shadow: 0 0 35px #ffd700, 0 0 60px #ffa502; }
+        }
+        
+        .pokemon-image-container {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+        }
+        
+        .pokemon-image-animated {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            animation: spriteBounce 1s ease-in-out infinite;
+        }
+        
+        @keyframes spriteBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .pokemon-name { font-size: 2.2rem; font-weight: bold; margin-bottom: 10px; color: #e74c3c; }
+        .pokemon-name.shiny-name {
+            background: linear-gradient(90deg, #ff6b6b, #ffd700, #ff6b6b);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 2s linear infinite;
+        }
+        
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+        
+        .pokemon-type { font-size: 1.1rem; opacity: 0.8; margin-bottom: 15px; }
+        .pokemon-type span { background: rgba(255, 255, 255, 0.2); padding: 5px 14px; border-radius: 15px; margin: 0 5px; }
+        
+        .rarity-badge { padding: 8px 16px; border-radius: 15px; margin-bottom: 15px; font-weight: bold; display: inline-block; }
+        .rarity-common { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
+        .rarity-uncommon { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
+        .rarity-rare { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+        .rarity-epic { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+        .rarity-legendary { background: linear-gradient(135deg, #f1c40f, #f39c12); color: #1a1a2e; }
+        
+        .shiny-badge { 
+            background: linear-gradient(135deg, #ff6b6b, #ffd700, #ff6b6b); 
+            background-size: 200% 100%;
+            color: white; 
+            padding: 10px 20px; 
+            border-radius: 15px; 
+            font-weight: bold; 
+            display: inline-block; 
+            margin-bottom: 15px; 
+            animation: shinyBadgeShimmer 1.5s linear infinite;
+            font-size: 1.2rem;
+        }
+        
+        @keyframes shinyBadgeShimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+        
+        .added-to-team { color: #2ecc71; font-weight: bold; margin-top: 10px; font-size: 1.1rem; }
+        
+        .btn { padding: 14px 28px; border: none; border-radius: 25px; cursor: pointer; font-size: 1rem; font-weight: bold; text-decoration: none; display: inline-block; margin: 8px; transition: all 0.3s ease; }
+        .btn-primary { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+        .btn-primary:hover { transform: scale(1.05); }
+        .btn-secondary { background: rgba(255, 255, 255, 0.2); color: white; }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="catch-bg" id="catchBg"></div>
+    <div class="catch-effect" id="catchEffect"></div>
+    
+    <div class="pokeball-throw" id="pokeballThrow">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Pokeball">
+    </div>
+    
+    <div class="catch-container" id="catchContainer">
+        <div class="target-pokemon">
+            <img src="{{ pokemon.sprite_url }}" alt="{{ pokemon.name }}" id="targetPokemon">
+        </div>
+    </div>
+    
+    <div class="result-card{% if rarity == 'Legendary' %} legendary{% endif %}{% if is_shiny %} shiny{% endif %}" id="resultCard">
+        <div class="card-content">
+            <div class="pokemon-image-container">
+                {% if is_shiny %}
+                <img src="{{ pokemon.shiny_sprite_url }}" alt="{{ pokemon.name }}" class="pokemon-image-animated">
+                {% else %}
+                <img src="{{ pokemon.sprite_url }}" alt="{{ pokemon.name }}" class="pokemon-image-animated">
+                {% endif %}
+            </div>
+            <div class="pokemon-name{% if is_shiny %} shiny-name{% endif %}">{{ pokemon.name }}{% if is_shiny %} ⭐{% endif %}</div>
+            <div class="pokemon-type"><span>{{ pokemon.type }}</span></div>
+            
+            {% if is_shiny %}
+            <div class="shiny-badge">SHINY</div>
+            {% else %}
+            <div class="rarity-badge rarity-{{ rarity|lower }}">{{ rarity }}</div>
+            {% endif %}
+            
+            {% if added_to_team %}
+            <div class="added-to-team">✓ Added to your team!</div>
+            {% elif duplicate_pokemon %}
+            <div style="margin-top: 10px; color: #f39c12; font-size: 0.9rem;">Already in team - found in Pokédex!</div>
+            {% else %}
+            <div style="margin-top: 10px; opacity: 0.7; font-size: 0.9rem;">Team is full - add from Pokédex</div>
+            {% endif %}
+            
+            {% if already_unlocked and not added_to_team %}
+            <div style="margin-top: 8px; opacity: 0.6; font-size: 0.85rem;">(You already had this Pokemon)</div>
+            {% endif %}
+            
+            <div style="margin-top: 25px;">
+                <a href="{% url 'pokemon:dashboard' %}" class="btn btn-primary">Back to Dashboard</a>
+                <a href="{% url 'pokemon:pokedex' %}" class="btn btn-secondary">View Pokédex</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const catchBg = document.getElementById('catchBg');
+        const catchEffect = document.getElementById('catchEffect');
+        const pokeballThrow = document.getElementById('pokeballThrow');
+        const resultCard = document.getElementById('resultCard');
+        const targetPokemon = document.getElementById('targetPokemon');
+        
+        // Start animation sequence
+        setTimeout(function() {
+            // Zoom in effect
+            catchBg.classList.add('zoom');
+        }, 500);
+        
+        setTimeout(function() {
+            // Start pokeball throw
+            pokeballThrow.classList.add('animate');
+        }, 1500);
+        
+        setTimeout(function() {
+            // Hide pokemon (caught!)
+            targetPokemon.style.opacity = '0';
+            catchEffect.classList.add('show');
+        }, 2800);
+        
+        setTimeout(function() {
+            // Show result card
+            resultCard.classList.add('show');
+        }, 3500);
+        
+        // Allow skipping by clicking
+        document.body.addEventListener('click', function() {
+            if (!resultCard.classList.contains('show')) {
+                pokeballThrow.classList.remove('animate');
+                targetPokemon.style.opacity = '0';
+                catchEffect.classList.add('show');
+                resultCard.classList.add('show');
+            }
+        });
+    </script>
+</body>
+</html>

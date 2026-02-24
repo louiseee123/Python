@@ -1,0 +1,603 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safari Zone - Pokemon Trainer</title>
+    <link rel="stylesheet" href="{% static 'pokemon/background.css' %}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; color: white; }
+        
+        .navbar { 
+            background: rgba(0, 0, 0, 0.4); 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .nav-brand { font-size: 1.5rem; font-weight: bold; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links a { 
+            color: white; 
+            text-decoration: none; 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            transition: all 0.3s; 
+        }
+        .nav-links a:hover { background: rgba(255,255,255,0.1); }
+        .nav-links a.active { background: rgba(78,205,196,0.3); }
+        .logout-icon { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .logout-icon:hover { 
+            background: rgba(255,100,100,0.3); 
+            transform: scale(1.1); 
+        }
+        .logout-icon svg { 
+            width: 20px; 
+            height: 20px; 
+            fill: white; 
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+        
+        .page-header { text-align: center; margin-bottom: 30px; }
+        .page-header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        
+        .safari-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .stat-card .icon { font-size: 1.5rem; }
+        .stat-card .value { font-size: 1.5rem; font-weight: bold; }
+        .stat-card .label { font-size: 0.85rem; opacity: 0.8; }
+        
+        .weather-box {
+            background: linear-gradient(135deg, #4a90d9, #357abd);
+            padding: 15px 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .weather-box .weather-icon { font-size: 2rem; }
+        .weather-box .weather-text { font-weight: bold; }
+        
+        /* Safari Field */
+        .safari-field { 
+            background: linear-gradient(180deg, #87CEEB 0%, #90EE90 50%, #228B22 100%);
+            border-radius: 25px;
+            padding: 40px;
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        /* Weather overlay effects */
+        .safari-field.weather-Sunny { 
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 30%, #7CCD7C 50%, #228B22 100%);
+        }
+        .safari-field.weather-Rainy {
+            background: linear-gradient(180deg, #4a5568 0%, #718096 30%, #4a5568 50%, #2d3748 100%);
+        }
+        .safari-field.weather-Foggy {
+            background: linear-gradient(180deg, #a0aec0 0%, #cbd5e0 30%, #a0aec0 50%, #718096 100%);
+        }
+        
+        /* Wild Pokemon */
+        .wild-pokemon {
+            position: absolute;
+            cursor: pointer;
+            text-align: center;
+            padding: 10px;
+            border-radius: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+        .wild-pokemon:hover { 
+            transform: scale(1.15); 
+        }
+        .wild-pokemon.caught {
+            display: none !important;
+        }
+        .wild-pokemon.escaped {
+            display: none !important;
+        }
+        .wild-pokemon img { 
+            width: 80px; 
+            height: 80px; 
+            image-rendering: pixelated; 
+        }
+        .wild-pokemon .name { 
+            font-size: 0.85rem; 
+            font-weight: bold; 
+            text-shadow: 1px 1px 2px black;
+            margin-top: 5px;
+        }
+        .wild-pokemon .rarity { 
+            font-size: 0.7rem; 
+            opacity: 0.9; 
+        }
+        .wild-pokemon .timer {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: rgba(0,0,0,0.7);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .refresh-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: #1a1a2e;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            width: fit-content;
+        }
+        .refresh-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255,107,107,0.4);
+        }
+        
+        /* Catch Modal */
+        .catch-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .catch-modal.show { display: flex; }
+        .catch-content {
+            background: linear-gradient(135deg, #2d2d44, #1e1e32);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .catch-content img { 
+            width: 180px; 
+            height: 180px; 
+            margin: 20px 0; 
+            image-rendering: pixelated;
+        }
+        .catch-title { font-size: 2rem; margin-bottom: 15px; }
+        .catch-result { font-size: 1.3rem; margin: 20px 0; }
+        .catch-success { color: #4caf50; }
+        .catch-fail { color: #f44336; }
+        .catch-shiny {
+            color: #ffd700;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 10px;
+            animation: glow 1s infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ffd700; }
+            to { text-shadow: 0 0 20px #ffd700, 0 0 30px #ffaa00; }
+        }
+        
+        .catch-btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            margin-top: 15px;
+        }
+        
+        /* Fail Modal */
+        .fail-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .fail-modal.show { display: flex; }
+        .fail-content {
+            background: linear-gradient(135deg, #2d2d44, #1e1e32);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .fail-content img { 
+            width: 120px; 
+            height: 120px; 
+            margin: 15px 0; 
+            image-rendering: pixelated;
+            opacity: 0.7;
+        }
+        .fail-title { font-size: 1.8rem; color: #f44336; margin-bottom: 10px; }
+        .fail-message { font-size: 1.1rem; opacity: 0.9; }
+        
+        /* Result Card */
+        .result-card {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #2d2d44, #1e1e32);
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            z-index: 1001;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            min-width: 300px;
+        }
+        .result-card.show { display: block; }
+        .result-card.legendary { border: 3px solid #ffd700; }
+        .result-pokemon-img img {
+            width: 150px;
+            height: 150px;
+            image-rendering: pixelated;
+        }
+        .result-pokemon-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .result-pokemon-name.shiny {
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700;
+        }
+        .result-shiny {
+            color: #ffd700;
+            font-size: 1.3rem;
+            font-weight: bold;
+            animation: glow 1s infinite alternate;
+        }
+        .result-rarity {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .result-rarity.common { background: #6c757d; }
+        .result-rarity.uncommon { background: #28a745; }
+        .result-rarity.rare { background: #007bff; }
+        .result-rarity.epic { background: #6f42c1; }
+        .result-rarity.legendary { background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; }
+        .result-info { margin: 15px 0; opacity: 0.9; }
+        .result-close-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            opacity: 0.7;
+        }
+        
+        .wild-count {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-links">
+            <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
+            <a href="{% url 'pokemon:pokedex' %}">Pokédex</a>
+            <a href="{% url 'pokemon:my_team' %}">My Team</a>
+            <a href="{% url 'pokemon:profile' %}">Profile</a>
+            <a href="{% url 'pokemon:shop' %}">Shop</a>
+            <a href="{% url 'pokemon:safari_zone' %}" class="active">Safari Zone</a>
+            <a href="{% url 'pokemon:inventory' %}">Inventory</a>
+            <a href="{% url 'pokemon:achievements' %}">Achievements</a>
+            <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+            </a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1>Safari Zone</h1>
+            <p>Catch wild Pokemon in their natural habitat!</p>
+        </div>
+        
+        <div class="safari-stats">
+            <div class="stat-card">
+                <div class="icon">🎱</div>
+                <div class="value">{{ trainer.pokeball_count }}</div>
+                <div class="label">Pokeballs</div>
+            </div>
+            <div class="weather-box">
+                <div class="weather-icon">{{ weather_info.icon }}</div>
+                <div class="weather-text">{{ weather }}</div>
+                <div style="font-size: 0.85rem;">{{ weather_info.effect }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">⚔️</div>
+                <div class="value" id="wildCount">{{ safari_pokemon|length }}</div>
+                <div class="label">Wild Pokemon</div>
+            </div>
+        </div>
+        
+        <div class="safari-field weather-{{ weather }}">
+            <div class="wild-count">
+                🎯 Wild: <span id="wildCountBadge">{{ safari_pokemon|length }}</span> remaining
+            </div>
+            
+            {% for pokemon in safari_pokemon %}
+            <div class="wild-pokemon" id="pokemon-{{ pokemon.id }}" 
+                 style="left: {{ pokemon.left }}%; top: {{ pokemon.top }}%;"
+                 data-pokemon-id="{{ pokemon.pokemon_id }}"
+                 data-pokemon-name="{{ pokemon.pokemon_name }}"
+                 data-pokemon-sprite="{{ pokemon.pokemon_sprite }}"
+                 data-pokemon-rarity="{{ pokemon.pokemon_rarity }}"
+                 data-duration="{{ pokemon.duration }}"
+                 onclick="catchPokemon(this)">
+                <span class="timer" id="timer-{{ pokemon.id }}">{{ pokemon.duration }}s</span>
+                <img src="{{ pokemon.pokemon_sprite }}" alt="{{ pokemon.pokemon_name }}">
+                <div class="name">{{ pokemon.pokemon_name }}</div>
+                <div class="rarity">{{ pokemon.pokemon_rarity }}</div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <h3>No wild Pokemon appeared!</h3>
+                <p>The Safari Zone is quiet today...</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if safari_pokemon %}
+        <a href="?refresh=true" class="refresh-btn">🔄 New Safari Run</a>
+        {% endif %}
+    </div>
+    
+    <!-- Catch Modal -->
+    <div class="catch-modal" id="catchModal">
+        <div class="catch-content">
+            <h2 class="catch-title" id="catchTitle">Catching...</h2>
+            <img id="catchSprite" src="" alt="">
+            <div id="catchResult" class="catch-result"></div>
+            <button class="catch-btn" onclick="closeCatchModal()">Continue</button>
+        </div>
+    </div>
+    
+    <!-- Fail Modal -->
+    <div class="fail-modal" id="failModal">
+        <div class="fail-content">
+            <h2 class="fail-title">Got Away!</h2>
+            <img id="failPokemonImg" src="" alt="">
+            <div class="fail-message" id="failPokemonName"></div>
+            <button class="catch-btn" onclick="closeFailModal()">Continue</button>
+        </div>
+    </div>
+    
+    <!-- Result Card -->
+    <div class="result-card" id="resultCard">
+        <div class="result-pokemon-img" id="resultPokemonImg"></div>
+        <div class="result-pokemon-name" id="resultPokemonName"></div>
+        <div id="resultRarityOrShiny"></div>
+        <div class="result-info" id="resultTeamAdded"></div>
+        <div class="result-info" id="resultXp"></div>
+        <button class="result-close-btn" onclick="closeResultCard()">Awesome!</button>
+    </div>
+    
+    <script>
+    // Timer countdown for each pokemon
+    const pokemonTimers = {};
+    
+    // Initialize timers when page loads
+    document.querySelectorAll('.wild-pokemon').forEach(el => {
+        const id = el.id.replace('pokemon-', '');
+        const duration = parseInt(el.dataset.duration);
+        startTimer(id, duration);
+    });
+    
+    function startTimer(pokemonId, duration) {
+        let remaining = duration;
+        const timerEl = document.getElementById('timer-' + pokemonId);
+        
+        pokemonTimers[pokemonId] = setInterval(() => {
+            remaining--;
+            if (timerEl) {
+                timerEl.textContent = remaining + 's';
+            }
+            
+            if (remaining <= 0) {
+                clearInterval(pokemonTimers[pokemonId]);
+                const pokemonEl = document.getElementById('pokemon-' + pokemonId);
+                if (pokemonEl && !pokemonEl.classList.contains('caught')) {
+                    pokemonEl.classList.add('escaped');
+                    
+                    // Show fail modal
+                    const failPokemonImg = document.getElementById('failPokemonImg');
+                    const failPokemonName = document.getElementById('failPokemonName');
+                    failPokemonImg.src = pokemonEl.dataset.pokemonSprite;
+                    failPokemonName.textContent = pokemonEl.dataset.pokemonName + ' ran away!';
+                    document.getElementById('failModal').classList.add('show');
+                }
+                updateWildCount();
+            }
+        }, 1000);
+    }
+    
+    function updateWildCount() {
+        const wildPokemon = document.querySelectorAll('.wild-pokemon:not(.caught):not(.escaped)');
+        const count = wildPokemon.length;
+        document.getElementById('wildCount').textContent = count;
+        document.getElementById('wildCountBadge').textContent = count;
+        
+        if (count === 0) {
+            setTimeout(() => {
+                document.querySelector('.safari-field').innerHTML += `
+                    <div class="empty-state">
+                        <h3>No more wild Pokemon!</h3>
+                        <p>Start a new safari run to find more Pokemon.</p>
+                    </div>
+                `;
+            }, 500);
+        }
+    }
+    
+    function catchPokemon(element) {
+        const pokemonId = element.dataset.pokemonId;
+        const pokemonName = element.dataset.pokemonName;
+        const pokemonSprite = element.dataset.pokemonSprite;
+        const pokemonRarity = element.dataset.pokemonRarity;
+        
+        // Clear the timer
+        const pokemonIdx = element.id.replace('pokemon-', '');
+        if (pokemonTimers[pokemonIdx]) {
+            clearInterval(pokemonTimers[pokemonIdx]);
+        }
+        
+        // Show catch modal
+        const modal = document.getElementById('catchModal');
+        document.getElementById('catchSprite').src = pokemonSprite;
+        modal.classList.add('show');
+        
+        // Make the catch request
+        fetch('/safari/catch/' + pokemonId + '/')
+            .then(response => response.json())
+            .then(data => {
+                const title = document.getElementById('catchTitle');
+                const resultDiv = document.getElementById('catchResult');
+                
+                if (data.success) {
+                    if (data.caught) {
+                        title.textContent = 'Caught!';
+                        resultDiv.className = 'catch-result catch-success';
+                        resultDiv.innerHTML = 'You caught ' + data.pokemon_name + '!';
+                        
+                        // Mark as caught
+                        element.classList.add('caught');
+                        
+                        // Show result card after closing modal
+                        setTimeout(() => {
+                            closeCatchModal();
+                            showResultCard(data);
+                        }, 1500);
+                    } else {
+                        title.textContent = 'Got away!';
+                        resultDiv.className = 'catch-result catch-fail';
+                        resultDiv.textContent = data.message || data.pokemon_name + ' got away!';
+                        
+                        // Mark as escaped
+                        element.classList.add('escaped');
+                        
+                        setTimeout(() => {
+                            closeCatchModal();
+                        }, 1200);
+                    }
+                } else {
+                    title.textContent = 'Error';
+                    resultDiv.className = 'catch-result catch-fail';
+                    resultDiv.textContent = data.error || 'Something went wrong';
+                }
+                
+                updateWildCount();
+            })
+            .catch(error => {
+                document.getElementById('catchTitle').textContent = 'Error';
+                document.getElementById('catchResult').className = 'catch-result catch-fail';
+                document.getElementById('catchResult').textContent = 'Network error occurred';
+            });
+    }
+    
+    function closeCatchModal() {
+        document.getElementById('catchModal').classList.remove('show');
+    }
+    
+    function closeFailModal() {
+        document.getElementById('failModal').classList.remove('show');
+    }
+    
+    function showResultCard(data) {
+        const card = document.getElementById('resultCard');
+        const spriteUrl = data.is_shiny ? data.pokemon_sprite.replace('/animates/', '/').replace('/animated/', '/') : data.pokemon_sprite;
+        
+        document.getElementById('resultPokemonImg').innerHTML = '<img src="' + spriteUrl + '" alt="' + data.pokemon_name + '">';
+        document.getElementById('resultPokemonName').textContent = data.pokemon_name;
+        if (data.is_shiny) {
+            document.getElementById('resultPokemonName').className = 'result-pokemon-name shiny';
+            document.getElementById('resultPokemonName').innerHTML += ' ⭐';
+        } else {
+            document.getElementById('resultPokemonName').className = 'result-pokemon-name';
+        }
+        
+        document.getElementById('resultRarityOrShiny').innerHTML = data.is_shiny ? '<div class="result-shiny">SHINY!</div>' : '<div class="result-rarity ' + data.rarity.toLowerCase() + '">' + data.rarity + '</div>';
+        document.getElementById('resultTeamAdded').textContent = data.added_to_team ? '✓ Added to your team!' : 'Found in Pokédex!';
+        document.getElementById('resultXp').textContent = '+' + data.xp_earned + ' XP';
+        
+        if (data.rarity === 'Legendary') card.classList.add('legendary');
+        else card.classList.remove('legendary');
+        
+        card.classList.add('show');
+    }
+    
+    function closeResultCard() {
+        document.getElementById('resultCard').classList.remove('show');
+    }
+    </script>
+</body>
+</html>

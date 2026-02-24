@@ -1,0 +1,12 @@
+<nav class="navbar">
+        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-links">
+            <a href="{% url 'pokemon:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{% url 'pokemon:pokedex' %}" class="{% if request.resolver_match.url_name == 'pokedex' %}active{% endif %}">Pokédex</a>
+            <a href="{% url 'pokemon:my_team' %}" class="{% if request.resolver_match.url_name == 'my_team' %}active{% endif %}">My Team</a>
+            <a href="{% url 'pokemon:profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a>
+            <a href="{% url 'pokemon:shop' %}" class="{% if request.resolver_match.url_name == 'shop' %}active{% endif %}">Shop</a>
+            <a href="{% url 'pokemon:safari_zone' %}" class="{% if request.resolver_match.url_name == 'safari_zone' %}active{% endif %}">Safari Zone</a>
+            <a href="{% url 'pokemon:logout' %}">Logout</a>
+        </div>
+    </nav>
