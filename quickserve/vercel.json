@@ -2,19 +2,25 @@
   "version": 2,
   "builds": [
     {
-      "src": "api.py",
+      "src": "quickserve/wsgi.py",
       "use": "@vercel/python",
-      "config": { "runtime": "python3.9" }
+      "config": {
+        "runtime": "python3.9"
+      }
     }
   ],
   "routes": [
     {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/api.py"
+      "dest": "quickserve/wsgi.py"
     }
   ],
   "env": {
     "DJANGO_SETTINGS_MODULE": "quickserve.settings",
-    "PYTHONPATH": "."
+    "PYTHONPATH": "quickserve"
   }
 }
