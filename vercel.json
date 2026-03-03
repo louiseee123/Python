@@ -5,22 +5,24 @@
       "src": "quickserve/quickserve/wsgi.py",
       "use": "@vercel/python",
       "config": {
-        "runtime": "python3.9"
+        "runtime": "python3.11",
+        "maxLambdaSize": "15mb"
       }
     }
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/$1"
+      "src": "/static/(.*)$",
+      "dest": "/quickserve/pokemon/static/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "quickserve/quickserve/wsgi.py"
+      "src": "/(.*)$",
+      "dest": "/quickserve/quickserve/wsgi.py"
     }
   ],
   "env": {
     "DJANGO_SETTINGS_MODULE": "quickserve.settings",
-    "PYTHONPATH": "quickserve"
-  }
+    "PYTHONPATH": "$PYTHONPATH:quickserve"
+  },
+  "framework": null
 }
