@@ -5,7 +5,7 @@
       "src": "quickserve/wsgi.py",
       "use": "@vercel/python",
       "config": {
-        "runtime": "python3.9"
+        "runtime": "python3.11"
       }
     }
   ],
@@ -16,11 +16,12 @@
     },
     {
       "src": "/(.*)",
-      "dest": "quickserve/wsgi.py"
+      "dest": "/wsgi.py"
     }
   ],
-  "env": {
-    "DJANGO_SETTINGS_MODULE": "quickserve.settings",
-    "PYTHONPATH": "quickserve"
+  "build": {
+    "env": {
+      "DJANGO_SETTINGS_MODULE": "quickserve.settings"
+    }
   }
 }
