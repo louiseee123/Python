@@ -41,9 +41,8 @@ def create_trainer(request):
         )
         Team.objects.create(trainer=trainer)
         
-        starter_pokemon = Pokemon.objects.filter(is_starter=True)
-        for pokemon in starter_pokemon:
-            PokemonUnlock.objects.create(trainer=trainer, pokemon=pokemon)
+        # Note: Starter Pokemon will be unlocked when the user chooses one in starter_selection
+        # This makes the starter selection meaningful - new trainers start with no Pokemon
         
         messages.success(request, 'Trainer profile created!')
         return redirect('pokemon:starter_selection')
@@ -305,26 +304,52 @@ def rename_member(request, member_id):
 
 @login_required
 def claim_task_xp(request, task_id):
-    """Claim XP and eggs for completing a task."""
+    """Claim XP, eggs, and coins for completing a task - returns JSON for modal."""
     task = get_object_or_404(DailyTask, id=task_id)
     trainer = request.user.trainer
     today = date.today()
     
     if TrainerTaskCompletion.objects.filter(trainer=trainer, task=task, date=today).exists():
-        messages.error(request, 'Task already completed!')
-        return redirect('pokemon:dashboard')
+        return JsonResponse({
+            'success': False,
+            'error': 'Task already completed!'
+        })
     
+    # Mark task as completed
     TrainerTaskCompletion.objects.create(trainer=trainer, task=task, date=today)
+    
+    # Add XP reward
     trainer.add_xp(task.xp_reward)
     
+    # Add egg reward if any
     if task.egg_reward > 0:
         trainer.egg_count += task.egg_reward
-        trainer.save()
-        messages.success(request, f'Task completed! +{task.xp_reward} XP, +{task.egg_reward} Egg(s)')
-    else:
-        messages.success(request, f'Task completed! +{task.xp_reward} XP')
     
-    return redirect('pokemon:dashboard')
+    # Add coin reward if any
+    if task.coin_reward > 0:
+        trainer.hunt_coins += task.coin_reward
+    
+    # Save trainer
+    trainer.save()
+    
+    # Build rewards list
+    rewards = {
+        'xp': task.xp_reward,
+        'eggs': task.egg_reward,
+        'coins': task.coin_reward
+    }
+    
+    return JsonResponse({
+        'success': True,
+        'task_name': task.name,
+        'rewards': rewards,
+        'trainer': {
+            'level': trainer.level,
+            'xp_progress': trainer.xp_progress,
+            'egg_count': trainer.egg_count,
+            'hunt_coins': trainer.hunt_coins
+        }
+    })
 
 
 @login_required
@@ -448,7 +473,156 @@ def hatch_egg(request):
 
 
 @login_required
+def hatch_5_eggs(request):
+    """Hatch 5 eggs at once to get random Pokemon."""
+    trainer = request.user.trainer
+    
+    if trainer.egg_count < 5:
+        messages.error(request, 'You need at least 5 eggs to hatch!')
+        return redirect('pokemon:dashboard')
+    
+    rarity_chances = {'Common': 50, 'Uncommon': 25, 'Rare': 15, 'Epic': 8, 'Legendary': 2}
+    xp_bonus = {'Common': 5, 'Uncommon': 10, 'Rare': 15, 'Epic': 25, 'Legendary': 50}
+    coin_values = {
+        'Common': 100,
+        'Uncommon': 250,
+        'Rare': 500,
+        'Epic': 750,
+        'Legendary': 1000,
+    }
+    
+    hatched_pokemon = []
+    team = trainer.team
+    total_xp = 0
+    total_coins = 0
+    
+    for i in range(5):
+        rand = random.randint(1, 100)
+        cumulative = 0
+        selected_rarity = 'Common'
+        for rarity, chance in rarity_chances.items():
+            cumulative += chance
+            if rand <= cumulative:
+                selected_rarity = rarity
+                break
+        
+        pokemon_pool = Pokemon.objects.filter(rarity=selected_rarity)
+        if not pokemon_pool.exists():
+            pokemon_pool = Pokemon.objects.all()
+        
+        random_pokemon = random.choice(pokemon_pool)
+        already_unlocked = trainer.unlocks.filter(pokemon=random_pokemon, shiny=False).exists()
+        shiny_chance = getattr(trainer, 'shiny_luck', 1)
+        is_shiny = random.randint(1, 100) <= shiny_chance
+        
+        unlock, created = PokemonUnlock.objects.get_or_create(
+            trainer=trainer, 
+            pokemon=random_pokemon,
+            defaults={'shiny': is_shiny}
+        )
+        if not created and is_shiny and not unlock.shiny:
+            unlock.shiny = True
+            unlock.save()
+        
+        # Calculate XP
+        xp_earned = xp_bonus.get(selected_rarity, 10)
+        if is_shiny:
+            xp_earned *= 2
+        total_xp += xp_earned
+        
+        # Check for duplicates
+        is_duplicate = already_unlocked and not is_shiny
+        if is_duplicate:
+            coins_earned = coin_values.get(selected_rarity, 100)
+            total_coins += coins_earned
+        
+        # Try to add to team
+        added_to_team = False
+        if not team.is_full:
+            if not team.members.filter(pokemon=random_pokemon).exists():
+                TeamMember.objects.create(
+                    team=team,
+                    pokemon=random_pokemon,
+                    nickname=random_pokemon.name
+                )
+                added_to_team = True
+        
+        hatched_pokemon.append({
+            'pokemon': random_pokemon,
+            'rarity': selected_rarity,
+            'is_shiny': is_shiny,
+            'already_unlocked': already_unlocked,
+            'added_to_team': added_to_team,
+            'xp_earned': xp_earned,
+            'is_duplicate': is_duplicate,
+            'coins_earned': coin_values.get(selected_rarity, 100) if is_duplicate else 0,
+        })
+    
+    # Update trainer
+    trainer.egg_count -= 5
+    if total_coins > 0:
+        trainer.hunt_coins += total_coins
+    trainer.save()
+    trainer.add_xp(total_xp)
+    
+    # Calculate summary stats for template
+    shiny_count = sum(1 for r in hatched_pokemon if r['is_shiny'])
+    added_count = sum(1 for r in hatched_pokemon if r['added_to_team'])
+    has_shiny = any(r['is_shiny'] for r in hatched_pokemon)
+    has_legendary = any(r['rarity'] == 'Legendary' for r in hatched_pokemon)
+    
+    context = {
+        'hatch_results': hatched_pokemon,
+        'total_xp': total_xp,
+        'total_coins': total_coins,
+        'shiny_count': shiny_count,
+        'added_count': added_count,
+        'has_shiny': has_shiny,
+        'has_legendary': has_legendary,
+        'team_size': team.members.count(),
+        'max_team_size': trainer.max_team_size,
+        'trainer': trainer,
+    }
+    return render(request, 'pokemon/hatch_5_result.html', context)
+
+
+@login_required
+def buy_eggs(request):
+    """Buy eggs from the shop using Hunt Coins."""
+    try:
+        trainer = request.user.trainer
+    except Trainer.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Trainer not found'})
+    
+    if request.method == 'POST':
+        quantity = int(request.POST.get('quantity', 1))
+        egg_price = 50  # Price per egg in Hunt Coins
+        
+        total_price = quantity * egg_price
+        
+        if trainer.hunt_coins < total_price:
+            return JsonResponse({
+                'success': False, 
+                'error': f'Not enough Hunt Coins! You need {total_price} coins but only have {trainer.hunt_coins}.'
+            })
+        
+        trainer.hunt_coins -= total_price
+        trainer.egg_count += quantity
+        trainer.save()
+        
+        return JsonResponse({
+            'success': True,
+            'quantity': quantity,
+            'remaining_coins': trainer.hunt_coins,
+            'message': f'Bought {quantity} egg(s) for {total_price} Hunt Coins!'
+        })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+@login_required
 def profile(request):
+
     """Trainer profile view."""
     try:
         trainer = request.user.trainer
@@ -856,16 +1030,16 @@ def achievements(request):
             'description': 'Catch your first Shiny Pokémon',
             'requirement': 1,
             'current': shiny_count,
-            'badge_url': f'{badge_base_url}/2.png',
+            'badge_url': f'{badge_base_url}/14.png',
             'category': 'shiny',
         },
         {
             'id': 'shiny_3',
-            'name': 'Shiny Seeker',
+            'name': 'Shiny Enthusiast',
             'description': 'Catch 3 Shiny Pokémon',
             'requirement': 3,
             'current': shiny_count,
-            'badge_url': f'{badge_base_url}/2.png',
+            'badge_url': f'{badge_base_url}/3.png',
             'category': 'shiny',
         },
         {
@@ -1039,9 +1213,8 @@ def signup(request):
         )
         Team.objects.create(trainer=trainer)
         
-        starter_pokemon = Pokemon.objects.filter(is_starter=True)
-        for pokemon in starter_pokemon:
-            PokemonUnlock.objects.create(trainer=trainer, pokemon=pokemon)
+        # Note: Starter Pokemon will be unlocked when the user chooses one in starter_selection
+        # This makes the starter selection meaningful - new accounts start with no Pokemon
         
         messages.success(request, 'Account created! Please log in.')
         return redirect('pokemon:login')

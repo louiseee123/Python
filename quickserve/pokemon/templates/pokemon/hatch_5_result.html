@@ -1,0 +1,891 @@
+{% load static %}
+{% load pokextras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5 Eggs Hatching... - Pokémon Trainer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        /* Full screen flash overlay */
+        .flash-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 100; 
+            pointer-events: none; 
+            opacity: 0; 
+        }
+        .flash-overlay.white-flash { 
+            background: white; 
+            animation: whiteFlash 2s ease-out forwards; 
+        }
+        .flash-overlay.gold-flash { 
+            background: linear-gradient(135deg, #ffd700 0%, #ffec8b 50%, #ffd700 100%); 
+            animation: goldFlash 2s ease-out forwards; 
+        }
+        .flash-overlay.rainbow-flash {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 25%, #6bcf7f 50%, #4d96ff 75%, #ff6b6b 100%);
+            animation: rainbowFlash 2s ease-out forwards;
+        }
+        
+        @keyframes whiteFlash { 0% { opacity: 0; } 10% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes goldFlash { 0% { opacity: 0; } 10% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes rainbowFlash { 0% { opacity: 0; } 10% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+        
+        /* Shiny burst effect */
+        .shiny-burst { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            pointer-events: none; 
+            z-index: 101; 
+            opacity: 0; 
+        }
+        .shiny-burst.active { 
+            animation: shinyBurst 1.5s ease-out forwards; 
+        }
+        
+        @keyframes shinyBurst { 
+            0% { opacity: 1; background: radial-gradient(circle at center, rgba(255,255,255,1) 0%, rgba(255,215,0,0.9) 20%, rgba(255,105,180,0.7) 40%, rgba(138,43,226,0.5) 60%, transparent 80%); } 
+            100% { opacity: 0; transform: scale(1.5); } 
+        }
+        
+        .hatch-container { 
+            position: relative; 
+            z-index: 10; 
+            text-align: center; 
+            width: 100%; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+        }
+        
+        /* 5 Eggs Layout */
+        .eggs-wrapper { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 30px; 
+            width: 100%; 
+            max-width: 1200px;
+            padding: 0 20px;
+        }
+        
+        .egg-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        /* Egg wobbling animation - staggered */
+        .egg { 
+            font-size: 6rem; 
+            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.6)); 
+            cursor: pointer;
+            opacity: 0;
+            transform: scale(0);
+        }
+        
+        .egg.animate {
+            animation: eggWobble 0.5s ease-in-out 3, eggAppear 0.3s ease-out forwards;
+        }
+        
+        .egg:nth-child(1).animate { animation-delay: 0s, 0s; }
+        .egg:nth-child(2).animate { animation-delay: 0.1s, 0.1s; }
+        .egg:nth-child(3).animate { animation-delay: 0.2s, 0.2s; }
+        .egg:nth-child(4).animate { animation-delay: 0.3s, 0.3s; }
+        .egg:nth-child(5).animate { animation-delay: 0.4s, 0.4s; }
+        
+        @keyframes eggAppear {
+            0% { opacity: 0; transform: scale(0); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes eggWobble { 
+            0% { transform: rotate(0deg) scale(1); } 
+            25% { transform: rotate(-15deg) scale(1.1); } 
+            50% { transform: rotate(0deg) scale(1); } 
+            75% { transform: rotate(15deg) scale(1.1); } 
+            100% { transform: rotate(0deg) scale(1); } 
+        }
+        
+        .egg.stopped { 
+            animation: none; 
+            transform: scale(1); 
+            opacity: 1;
+        }
+        
+        /* Pokemon Reveal Container */
+        .pokemon-reveal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 50; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+        }
+        .pokemon-reveal.show { 
+            display: flex; 
+            animation: fadeIn 0.5s ease forwards; 
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
+        }
+        
+        /* 5 Pokemon Sprites Layout */
+        .pokemon-sprites-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1400px;
+            padding: 0 20px;
+            margin-top: 100px;
+        }
+        
+        .pokemon-reveal-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: scale(0) translateY(50px);
+        }
+        
+        .pokemon-reveal-item.show {
+            animation: pokemonAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        .pokemon-reveal-item:nth-child(1).show { animation-delay: 0s; }
+        .pokemon-reveal-item:nth-child(2).show { animation-delay: 0.1s; }
+        .pokemon-reveal-item:nth-child(3).show { animation-delay: 0.2s; }
+        .pokemon-reveal-item:nth-child(4).show { animation-delay: 0.3s; }
+        .pokemon-reveal-item:nth-child(5).show { animation-delay: 0.4s; }
+        
+        @keyframes pokemonAppear { 
+            0% { transform: scale(0) translateY(50px) rotate(-10deg); opacity: 0; } 
+            50% { transform: scale(1.1) translateY(-10px) rotate(5deg); opacity: 1; } 
+            100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; } 
+        }
+        
+        .pokemon-sprite-container { 
+            width: 150px; 
+            height: 150px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            position: relative;
+        }
+        
+        .pokemon-sprite-gif { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            image-rendering: pixelated; 
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+        }
+        
+        .pokemon-name-reveal { 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            margin-top: 15px; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+        
+        /* ==================== PREMIUM HATCH RESULT CARDS ==================== */
+        
+        .result-cards-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .result-cards-container.show {
+            display: flex;
+            animation: containerFadeIn 0.8s ease forwards;
+        }
+        
+        @keyframes containerFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Cards Grid Layout - Horizontal row, no wrapping */
+        .cards-grid {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: nowrap;
+            max-width: 100vw;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+        
+        /* Individual Hatch Result Card - Much taller for horizontal fit */
+        .hatch-result-card {
+            position: relative;
+            width: calc((100vw - 140px) / 5);
+            min-width: 240px;
+            max-width: 320px;
+            padding: 10px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--type-color, #9b59b6), var(--type-color-light, #9b59b6)) padding-box, 
+                        linear-gradient(135deg, var(--type-color, #9b59b6), var(--type-color-light, #9b59b6), var(--type-color, #9b59b6)) border-box;
+            border: 2px solid transparent;
+            opacity: 0;
+            transform: scale(0.8) translateY(30px);
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .hatch-result-card:hover {
+            transform: translateY(-10px) scale(1.02);
+        }
+        
+        .hatch-result-card.show {
+            animation: cardPopIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        .hatch-result-card:nth-child(1).show { animation-delay: 0s; }
+        .hatch-result-card:nth-child(2).show { animation-delay: 0.15s; }
+        .hatch-result-card:nth-child(3).show { animation-delay: 0.3s; }
+        .hatch-result-card:nth-child(4).show { animation-delay: 0.45s; }
+        .hatch-result-card:nth-child(5).show { animation-delay: 0.6s; }
+        
+        @keyframes cardPopIn { 
+            from { opacity: 0; transform: scale(0.85) translateY(30px); } 
+            to { opacity: 1; transform: scale(1) translateY(0); } 
+        }
+        
+        /* Inner card content */
+        .card-inner {
+            position: relative;
+            background: linear-gradient(180deg, rgba(30, 20, 50, 0.95) 0%, rgba(20, 15, 35, 0.98) 50%, rgba(15, 10, 25, 1) 100%);
+            border-radius: 12px;
+            padding: 10px 8px 12px;
+            overflow: hidden;
+        }
+        
+        /* Radial gradient background */
+        .card-inner::before {
+            content: '';
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, var(--type-color-glow, rgba(155, 89, 182, 0.15)) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Card Header */
+        .card-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 4px; 
+            position: relative; 
+            z-index: 2; 
+        }
+        
+        .pokemon-name-main { 
+            font-size: 0.9rem; 
+            font-weight: 700; 
+            letter-spacing: 0.3px; 
+            color: #ffffff; 
+            text-shadow: 0 1px 4px rgba(0,0,0,0.5); 
+        }
+        
+        /* Type strip */
+        .type-strip { 
+            display: flex; 
+            align-items: center; 
+        }
+        .type-strip img { 
+            width: 36px; 
+            height: 14px; 
+            object-fit: contain; 
+        }
+        
+        /* Shiny indicator */
+        .shiny-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px 5px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd700, #4ecdc4, #a855f7, #ff6b6b);
+            background-size: 300% 100%;
+            animation: shinySheen 2.5s linear infinite;
+            box-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
+            margin-top: 3px;
+        }
+        
+        @keyframes shinySheen { 
+            0% { background-position: 0% 50%; } 
+            100% { background-position: 300% 50%; } 
+        }
+        
+        .shiny-indicator .star { 
+            font-size: 0.6rem; 
+        }
+        .shiny-indicator .shiny-text { 
+            font-size: 0.45rem; 
+            font-weight: 700; 
+            color: white; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5); 
+        }
+        
+        /* Artwork container - smaller for horizontal layout */
+        .artwork-container { 
+            position: relative; 
+            width: 100%; 
+            height: 80px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin: 6px 0; 
+            z-index: 2; 
+        }
+        
+        .artwork-frame { 
+            position: relative; 
+            width: 70px; 
+            height: 70px; 
+            border-radius: 10px; 
+            background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%); 
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.05), 0 3px 10px rgba(0,0,0,0.4); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        
+        .artwork-frame::before { 
+            content: ''; 
+            position: absolute; 
+            inset: 0; 
+            border-radius: 10px; 
+            padding: 1px; 
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(255,255,255,0.1) 100%); 
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); 
+            -webkit-mask-composite: xor; 
+            mask-composite: exclude; 
+        }
+        
+        .pokemon-artwork { 
+            width: 60px; 
+            height: 60px; 
+            object-fit: contain; 
+            image-rendering: pixelated; 
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5)); 
+            animation: artworkFloat 3s ease-in-out infinite; 
+        }
+        
+        @keyframes artworkFloat { 
+            0%, 100% { transform: translateY(0); } 
+            50% { transform: translateY(-3px); } 
+        }
+        
+        /* Pokemon Details Panel - smaller */
+        .details-panel { 
+            background: rgba(255,255,255,0.04); 
+            border-radius: 8px; 
+            padding: 8px 8px; 
+            margin-top: 4px; 
+            position: relative; 
+            z-index: 2; 
+        }
+        
+        .details-panel::before { 
+            content: ''; 
+            display: none;
+        }
+        
+        .detail-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 3px 0; 
+        }
+        .detail-row:not(:last-child) { 
+            border-bottom: 1px solid rgba(255,255,255,0.06); 
+        }
+        
+        .detail-label { 
+            font-size: 0.55rem; 
+            font-weight: 600; 
+            color: rgba(255,255,255,0.6); 
+            text-transform: uppercase; 
+            letter-spacing: 0.3px; 
+        }
+        
+        .detail-value { 
+            display: flex; 
+            align-items: center; 
+            gap: 3px; 
+        }
+        .detail-value img { 
+            width: 14px; 
+            height: 14px; 
+            object-fit: contain; 
+        }
+        .detail-value .type-name { 
+            font-size: 0.6rem; 
+            font-weight: 500; 
+            color: #ffffff; 
+        }
+        
+        /* Rarity badge styles */
+        .rarity-badge { 
+            padding: 4px 10px; 
+            border-radius: 10px; 
+            font-size: 0.7rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+        }
+        
+        .rarity-common { 
+            background: linear-gradient(135deg, #78909c, #546e7a); 
+            color: white; 
+            box-shadow: 0 2px 8px rgba(120, 144, 156, 0.3); 
+        }
+        .rarity-uncommon { 
+            background: linear-gradient(135deg, #66bb6a, #43a047); 
+            color: white; 
+            box-shadow: 0 2px 8px rgba(102, 187, 106, 0.3); 
+        }
+        .rarity-rare { 
+            background: linear-gradient(135deg, #42a5f5, #1e88e5); 
+            color: white; 
+            box-shadow: 0 2px 8px rgba(66, 165, 245, 0.4); 
+        }
+        .rarity-epic { 
+            background: linear-gradient(135deg, #ab47bc, #8e24aa); 
+            color: white; 
+            box-shadow: 0 2px 12px rgba(171, 71, 188, 0.5); 
+            animation: epicGlow 2s ease-in-out infinite; 
+        }
+        @keyframes epicGlow { 
+            0%, 100% { box-shadow: 0 2px 12px rgba(171, 71, 188, 0.5); } 
+            50% { box-shadow: 0 2px 16px rgba(171, 71, 188, 0.8); } 
+        }
+        .rarity-legendary { 
+            background: linear-gradient(135deg, #ffd54f, #ffb300, #ff8f00); 
+            color: #1a1a2e; 
+            box-shadow: 0 2px 16px rgba(255, 213, 79, 0.6); 
+            animation: legendaryGlow 1.5s ease-in-out infinite; 
+        }
+        @keyframes legendaryGlow { 
+            0%, 100% { box-shadow: 0 2px 16px rgba(255, 213, 79, 0.6); } 
+            50% { box-shadow: 0 2px 24px rgba(255, 213, 79, 0.9); } 
+        }
+        
+        /* Status message */
+        .status-message { 
+            text-align: center; 
+            margin-top: 15px; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            position: relative; 
+            z-index: 2; 
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 152, 0, 0.15);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+        }
+        .status-success { color: #4caf50; }
+        .status-warning { color: #ff9800; text-shadow: 0 0 10px rgba(255, 152, 0, 0.5); }
+        .status-info { color: rgba(255,255,255,0.5); font-size: 0.7rem; }
+        
+        /* Summary Section */
+        .summary-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .summary-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .summary-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .summary-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4ecdc4;
+        }
+        
+        .summary-stat-label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        /* Action buttons */
+        .card-actions { 
+            display: flex; 
+            gap: 12px; 
+            margin-top: 20px; 
+            position: relative; 
+            z-index: 2; 
+        }
+        
+        .btn { 
+            flex: 1; 
+            padding: 12px 16px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            text-decoration: none; 
+            display: inline-block; 
+            transition: all 0.3s ease; 
+            text-align: center; 
+        }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); 
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6); 
+        }
+        
+        .btn-secondary { 
+            background: rgba(255, 255, 255, 0.08); 
+            color: white; 
+            border: 1px solid rgba(255,255,255,0.15); 
+        }
+        .btn-secondary:hover { 
+            background: rgba(255, 255, 255, 0.15); 
+            transform: translateY(-2px); 
+        }
+        
+        .skip-hint { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            opacity: 0.5; 
+            font-size: 0.9rem; 
+            z-index: 20; 
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1400px) {
+            .cards-grid {
+                gap: 10px;
+            }
+            .hatch-result-card {
+                width: 240px;
+            }
+            .artwork-container {
+                height: 140px;
+            }
+            .artwork-frame {
+                width: 120px;
+                height: 120px;
+            }
+            .pokemon-artwork {
+                width: 100px;
+                height: 100px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .eggs-wrapper {
+                gap: 15px;
+            }
+            .egg {
+                font-size: 4rem;
+            }
+            .pokemon-sprites-row {
+                gap: 10px;
+            }
+            .pokemon-sprite-container {
+                width: 100px;
+                height: 100px;
+            }
+            .hatch-result-card {
+                width: 100%;
+                max-width: 300px;
+            }
+            .cards-grid {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flash-overlay" id="flashOverlay"></div>
+    <div class="shiny-burst" id="shinyBurst"></div>
+    
+    <!-- Phase 1: 5 Eggs Wobbling -->
+    <div class="hatch-container" id="hatchContainer">
+        <div class="eggs-wrapper" id="eggsWrapper">
+            <div class="egg-container"><div class="egg" id="egg1">🥚</div></div>
+            <div class="egg-container"><div class="egg" id="egg2">🥚</div></div>
+            <div class="egg-container"><div class="egg" id="egg3">🥚</div></div>
+            <div class="egg-container"><div class="egg" id="egg4">🥚</div></div>
+            <div class="egg-container"><div class="egg" id="egg5">🥚</div></div>
+        </div>
+    </div>
+    
+    <!-- Phase 2: Pokemon Sprites Reveal -->
+    <div class="pokemon-reveal" id="pokemonReveal">
+        <div class="pokemon-sprites-row" id="pokemonSpritesRow">
+            {% for result in hatch_results %}
+            <div class="pokemon-reveal-item" data-index="{{ forloop.counter0 }}">
+                <div class="pokemon-sprite-container">
+                    {% if result.is_shiny %}
+                    <img src="{{ result.pokemon.showdown_shiny_url }}" alt="{{ result.pokemon.name }}" class="pokemon-sprite-gif">
+                    {% else %}
+                    <img src="{{ result.pokemon.showdown_url }}" alt="{{ result.pokemon.name }}" class="pokemon-sprite-gif">
+                    {% endif %}
+                </div>
+                <div class="pokemon-name-reveal">{{ result.pokemon.name }}{% if result.is_shiny %} ⭐{% endif %}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Phase 3: Result Cards -->
+    <div class="result-cards-container" id="resultCardsContainer">
+        <!-- 5 Pokemon Cards -->
+        <div class="cards-grid">
+            {% for result in hatch_results %}
+            <div class="hatch-result-card" 
+                 style="--type-color: {{ result.pokemon.get_type_color }}; 
+                        --type-color-light: {{ result.pokemon.get_type_color_light }}; 
+                        --type-color-dark: {{ result.pokemon.get_type_color_dark }}; 
+                        --type-color-glow: {{ result.pokemon.get_type_color_glow }};"
+                 data-index="{{ forloop.counter0 }}">
+                <div class="card-inner">
+                    <!-- Header: Name and Type -->
+                    <div class="card-header">
+                        <div>
+                            <div class="pokemon-name-main">{{ result.pokemon.name|upper }}</div>
+                            {% if result.is_shiny %}
+                            <div class="shiny-indicator">
+                                <span class="star">⭐</span>
+                                <span class="shiny-text">Shiny</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="type-strip">
+                            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/{{ result.pokemon.type|lower|type_to_number }}.png" alt="{{ result.pokemon.type }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Artwork Container -->
+                    <div class="artwork-container">
+                        <div class="artwork-frame">
+                            {% if result.is_shiny %}
+                            <img src="{{ result.pokemon.showdown_shiny_url }}" alt="{{ result.pokemon.name }}" class="pokemon-artwork">
+                            {% else %}
+                            <img src="{{ result.pokemon.showdown_url }}" alt="{{ result.pokemon.name }}" class="pokemon-artwork">
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Pokemon Details Panel -->
+                    <div class="details-panel">
+                        <div class="detail-row">
+                            <span class="detail-label">Type</span>
+                            <div class="detail-value">
+                                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/{{ result.pokemon.type|lower|type_to_number }}.png" alt="{{ result.pokemon.type }}">
+                                <span class="type-name">{{ result.pokemon.type }}</span>
+                            </div>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Rarity</span>
+                            <span class="rarity-badge rarity-{{ result.rarity|lower }}">{{ result.rarity }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Message -->
+                    <div class="status-message">
+                        {% if result.added_to_team %}
+                        <div class="status-success">Added to team!</div>
+                        {% elif result.is_duplicate %}
+                        <div class="status-warning">Converted to {{ result.coins_earned }} coins</div>
+                        {% else %}
+                        <div class="status-info">Team full - sent to storage</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="card-actions" style="max-width: 400px; width: 100%;">
+            <a href="{% url 'pokemon:dashboard' %}" class="btn btn-primary">Dashboard</a>
+            <a href="{% url 'pokemon:pokedex' %}" class="btn btn-secondary">Pokédex</a>
+        </div>
+    </div>
+    
+    <div class="skip-hint">Click to skip</div>
+    
+    <script>
+        const EGG_SHAKE_DURATION = 1500;
+        const FLASH_DURATION = 2000;
+        const POKEMON_REVEAL_DURATION = 3000;
+        
+        const hatchContainer = document.getElementById('hatchContainer');
+        const flashOverlay = document.getElementById('flashOverlay');
+        const shinyBurst = document.getElementById('shinyBurst');
+        const pokemonReveal = document.getElementById('pokemonReveal');
+        const resultCardsContainer = document.getElementById('resultCardsContainer');
+        
+        // Get data from Django template
+        const hasShiny = '{{ has_shiny|yesno:"true,false" }}' === 'true';
+        const hasLegendary = '{{ has_legendary|yesno:"true,false" }}' === 'true';
+        
+        let animationSkipped = false;
+
+        
+        function startAnimation() {
+            // Start egg animations with stagger
+            const eggs = document.querySelectorAll('.egg');
+            eggs.forEach((egg, index) => {
+                setTimeout(() => {
+                    egg.classList.add('animate');
+                }, index * 100);
+            });
+            
+            // Stop wobbling and transition to flash
+            setTimeout(() => {
+                if (animationSkipped) return;
+                eggs.forEach(egg => egg.classList.add('stopped'));
+                hatchContainer.style.display = 'none';
+                
+                // Determine flash type based on best rarity/shiny
+                if (hasShiny) {
+                    flashOverlay.classList.add('rainbow-flash');
+                } else if (hasLegendary) {
+                    flashOverlay.classList.add('gold-flash');
+                } else {
+                    flashOverlay.classList.add('white-flash');
+                }
+                
+                if (hasShiny) {
+                    shinyBurst.classList.add('active');
+                }
+                
+                // Show Pokemon sprites
+                pokemonReveal.classList.add('show');
+                const revealItems = document.querySelectorAll('.pokemon-reveal-item');
+                revealItems.forEach((item, index) => {
+                    setTimeout(() => {
+                        item.classList.add('show');
+                    }, index * 100);
+                });
+            }, EGG_SHAKE_DURATION + 500);
+            
+            // Transition to result cards
+            setTimeout(() => {
+                if (animationSkipped) return;
+                pokemonReveal.classList.remove('show');
+                flashOverlay.classList.remove('white-flash', 'gold-flash', 'rainbow-flash');
+                shinyBurst.classList.remove('active');
+                resultCardsContainer.classList.add('show');
+                
+                // Animate cards in
+                const cards = document.querySelectorAll('.hatch-result-card');
+                cards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('show');
+                    }, index * 150);
+                });
+            }, EGG_SHAKE_DURATION + FLASH_DURATION + POKEMON_REVEAL_DURATION);
+        }
+        
+        function skipAnimation() {
+            if (animationSkipped) return;
+            animationSkipped = true;
+            
+            // Hide all animation phases
+            hatchContainer.style.display = 'none';
+            pokemonReveal.classList.remove('show');
+            flashOverlay.classList.remove('white-flash', 'gold-flash', 'rainbow-flash');
+            shinyBurst.classList.remove('active');
+            
+            // Show result cards immediately
+            resultCardsContainer.classList.add('show');
+            const cards = document.querySelectorAll('.hatch-result-card');
+            cards.forEach(card => card.classList.add('show'));
+        }
+        
+        // Start animation on page load
+        document.addEventListener('DOMContentLoaded', startAnimation);
+        
+        // Click to skip
+        document.addEventListener('click', skipAnimation);
+    </script>
+</body>
+</html>

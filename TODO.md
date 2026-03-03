@@ -1,31 +1,58 @@
-# Safari Zone Implementation - COMPLETED
+# Pokemon Details Card Component - Implementation Plan
 
-## Features Implemented:
+## Steps to Complete:
 
-### ✅ Database & Backend
-- [x] Added pokeball_count field to Trainer model (default: 10)
-- [x] Created migration for the new field
-- [x] Created SafariZone view in views.py
-- [x] Added URL routes in urls.py (/safari/, /safari/catch/)
+### 1. Create the Reusable Component
+- [x] Create `quickserve/pokemon/templates/pokemon/components/pokemon_detail_card.html`
 
-### ✅ Template & Frontend
-- [x] Created safari_zone.html template
-- [x] Left sidebar: Weather, Pokeballs count, Wild Pokemon count
-- [x] Safari field with 5 random Pokemon spawning
-- [x] CSS animations for Pokemon movement
-- [x] Catch functionality with JavaScript
+  - TGC-style card layout with type-based gradients
+  - Pokemon name in ALL CAPS, BOLD at top left
+  - Rainbow star icon (only if shiny) at top left
+  - Type.png image at top right
+  - Pokemon sprite from showdown directory (.gif) in center
+  - "Pokemon Details" section with Rarity and Pokedex Entry
+  - Context-aware buttons (Add to Team / Remove from Team / Back)
 
-### ✅ Enhanced Catch Animation
-- [x] **Confirm Modal** - "Throw a pokeball at [Pokemon]?" prompt appears FIRST
-- [x] Shows Pokemon image and catch rate
-- [x] **BIG Pokeball** - 150px size (very visible)
-- [x] Pokemon shrinks into the ball
-- [x] Pokeball wiggles 3 times (classic Pokemon style)
-- [x] Success: Star animations + message + result card
-- [x] Fail: Pokemon runs away animation
+### 2. Update Pokedex Template
+- [x] Modify `quickserve/pokemon/templates/pokemon/pokedex.html`
 
-### ✅ Navigation
-- [x] Safari Zone link in navbar on all pages
+  - Replace direct navigation with modal using the new component
+  - Pass appropriate context variables to the component
 
-### ✅ Testing
-- [x] Server running successfully at http://127.0.0.1:8000/
+### 3. Update My Team Template
+- [x] Modify `quickserve/pokemon/templates/pokemon/my_team_updated.html`
+
+  - Update modal for available Pokemon section to use new component
+  - Update modal for active team section to use new component
+  - Ensure proper button functionality (Add vs Remove)
+
+### 4. Testing
+- [x] Test component in Pokedex page
+- [x] Test component in My Team page (available section)
+- [x] Test component in My Team page (active team section)
+- [x] Verify Add to Team functionality works
+- [x] Verify Remove from Team functionality works
+
+
+---
+
+## Additional Completed Tasks:
+
+### Hatch 5 Eggs Feature
+- [x] Create `hatch_5_result.html` template with 3-phase animation
+- [x] Add `hatch_5_eggs` view to `views.py` for batch processing
+- [x] Add URL pattern for `hatch_5_eggs` in `urls.py`
+- [x] Add "Hatch 5 Eggs" button to dashboard (shown when user has 5+ eggs)
+- [x] Animation: 5 eggs wobble simultaneously with staggered timing
+- [x] Flash effects based on highest rarity/shiny status (white/gold/rainbow)
+- [x] Shiny burst effect for shiny Pokemon
+- [x] 5 Pokemon sprites appear horizontally after eggs fade
+- [x] 5 TGC-style result cards with type gradients, rarity glows, shiny indicators
+- [x] Summary section showing total XP, shiny count, team additions, coins earned
+
+### Remove My Team from Navigation
+- [x] Remove "My Team" link from `pokedex.html` navbar
+- [x] Remove "My Team" link from `profile.html` navbar
+- [x] Remove "My Team" link from `shop.html` navbar
+- [x] Remove "My Team" link from `inventory.html` navbar
+- [x] Remove "My Team" link from `achievements.html` navbar

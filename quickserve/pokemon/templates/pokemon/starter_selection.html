@@ -15,103 +15,319 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
-            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
         }
         .container {
-            max-width: 900px;
-            margin: 0 auto;
+            max-width: 1000px;
+            width: 100%;
+            text-align: center;
         }
         h1 {
-            text-align: center;
             margin-bottom: 10px;
             font-size: 2.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         .subtitle {
-            text-align: center;
             margin-bottom: 40px;
-            opacity: 0.8;
+            opacity: 0.9;
+            font-size: 1.1rem;
         }
-        .starters {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-        .starter-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 3px solid transparent;
-        }
-        .starter-card:hover {
-            transform: translateY(-10px);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-        .starter-card.fire:hover {
-            border-color: #ff6b6b;
-            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.3);
-        }
-        .starter-card.water:hover {
-            border-color: #4ecdc4;
-            box-shadow: 0 20px 40px rgba(78, 205, 196, 0.3);
-        }
-        .starter-card.grass:hover {
-            border-color: #95e881;
-            box-shadow: 0 20px 40px rgba(149, 232, 129, 0.3);
-        }
-        .pokemon-image {
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
+        
+        /* Carousel Container */
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            height: 450px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4rem;
         }
+        
+        /* Navigation Arrows */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        .nav-arrow:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+        .nav-arrow.prev {
+            left: -30px;
+        }
+        .nav-arrow.next {
+            right: -30px;
+        }
+        
+        /* Carousel Slides */
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: scale(0.85) translateX(100px);
+            transition: all 0.5s ease;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .carousel-slide.active {
+            opacity: 1;
+            transform: scale(1) translateX(0);
+            pointer-events: auto;
+            z-index: 5;
+        }
+        
+        .carousel-slide.prev {
+            transform: scale(0.85) translateX(-100px);
+            opacity: 0;
+            z-index: 3;
+        }
+        
+        .carousel-slide.next {
+            transform: scale(0.85) translateX(100px);
+            opacity: 0;
+            z-index: 3;
+        }
+        
+        /* Pokeball Base */
+        .pokeball-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+        
+        .pokeball {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(180deg, 
+                #ff1a1a 0%, #ff1a1a 45%, 
+                #333 45%, #333 55%, 
+                #fff 55%, #fff 100%
+            );
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4),
+                        inset 0 -8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+        
+        .pokeball::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: #fff;
+            border: 8px solid #333;
+            border-radius: 50%;
+            z-index: 2;
+        }
+        
+        .pokeball::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            background: #333;
+            border-radius: 50%;
+            z-index: 3;
+        }
+        
+        /* Pokemon Sprite - Hovering */
+        .pokemon-sprite {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 180px;
+            z-index: 5;
+            filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));
+            animation: hover 2s ease-in-out infinite;
+            object-fit: contain;
+        }
+        
+        @keyframes hover {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-20px);
+            }
+        }
+        
+        /* Type indicator glow */
+        .type-glow {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            z-index: 0;
+            opacity: 0.3;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.3; }
+            50% { transform: translateX(-50%) scale(1.1); opacity: 0.5; }
+        }
+        
+        .type-fire { background: radial-gradient(circle, #ff6b35 0%, transparent 70%); }
+        .type-water { background: radial-gradient(circle, #4fc3f7 0%, transparent 70%); }
+        .type-grass { background: radial-gradient(circle, #4caf50 0%, transparent 70%); }
+        .type-electric { background: radial-gradient(circle, #ffd700 0%, transparent 70%); }
+        
+        /* Pokemon Info */
+        .pokemon-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
         .pokemon-name {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
+            font-size: 2.2rem;
             font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
+        
         .pokemon-type {
             display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            padding: 6px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .type-fire { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
-        .type-water { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
-        .type-grass { background: linear-gradient(135deg, #95e881, #44a08d); }
+        
+        .type-fire { 
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+        }
+        .type-water { 
+            background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+            box-shadow: 0 4px 15px rgba(79, 195, 247, 0.4);
+        }
+        .type-grass { 
+            background: linear-gradient(135deg, #4caf50, #66bb6a);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        .type-electric { 
+            background: linear-gradient(135deg, #ffd700, #ffb300);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
         
         .pokemon-description {
             margin-top: 15px;
-            opacity: 0.8;
-            font-size: 0.9rem;
+            opacity: 0.85;
+            font-size: 0.95rem;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
             line-height: 1.5;
         }
         
-        .select-btn {
-            margin-top: 20px;
-            padding: 12px 30px;
+        /* Choose Button */
+        .choose-btn {
+            margin-top: 25px;
+            padding: 15px 50px;
             border: none;
             border-radius: 50px;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: white;
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
             color: #1a1a2e;
-        }
-        .select-btn:hover {
-            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 170, 0, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
         
+        .choose-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(255, 170, 0, 0.5);
+        }
+        
+        .choose-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        /* Dot Indicators */
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .dot.active {
+            background: #ffd700;
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .dot:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Hidden form */
         .hidden-form {
             display: none;
         }
@@ -120,23 +336,97 @@
 <body>
     <div class="container">
         <h1>Choose Your Starter</h1>
-        <p class="subtitle">Select one of these three Pokémon to begin your adventure!</p>
+        <p class="subtitle">Select one of these Pokémon to begin your adventure!</p>
         
-        <div class="starters">
-            {% for pokemon in starters %}
-            <div class="starter-card {{ pokemon.type|lower }}">
-                <div class="pokemon-image">🐾</div>
-                <div class="pokemon-name">{{ pokemon.name }}</div>
-                <span class="pokemon-type type-{{ pokemon.type|lower }}">{{ pokemon.type }}</span>
-                <p class="pokemon-description">{{ pokemon.description }}</p>
-                <form method="post" class="starter-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="pokemon_id" value="{{ pokemon.id }}">
-                    <button type="submit" class="select-btn">Choose {{ pokemon.name }}</button>
-                </form>
+        <div class="carousel-container">
+            <button class="nav-arrow prev" onclick="changeSlide(-1)">❮</button>
+            <button class="nav-arrow next" onclick="changeSlide(1)">❯</button>
+            
+            <div class="carousel" id="carousel">
+                {% for pokemon in starters %}
+                <div class="carousel-slide{% if forloop.first %} active{% endif %}" data-index="{{ forloop.counter0 }}">
+                    <div class="type-glow type-{{ pokemon.type|lower }}"></div>
+                    
+                    <div class="pokeball-container">
+                        <img src="{{ pokemon.showdown_url }}" alt="{{ pokemon.name }}" class="pokemon-sprite">
+                        <div class="pokeball"></div>
+                    </div>
+                    
+                    <div class="pokemon-info">
+                        <div class="pokemon-name">{{ pokemon.name }}</div>
+                        <span class="pokemon-type type-{{ pokemon.type|lower }}">{{ pokemon.type }}</span>
+                        <p class="pokemon-description">{{ pokemon.description }}</p>
+                        
+                        <form method="post" class="starter-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="pokemon_id" value="{{ pokemon.id }}">
+                            <button type="submit" class="choose-btn">Choose {{ pokemon.name }}</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
+        </div>
+        
+        <div class="carousel-dots" id="carouselDots">
+            {% for pokemon in starters %}
+            <div class="dot {% if forloop.first %}active{% endif %}" onclick="goToSlide({{ forloop.counter0 }})"></div>
             {% endfor %}
         </div>
     </div>
+    
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dots = document.querySelectorAll('.dot');
+        const totalSlides = slides.length;
+        
+        function updateCarousel() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev', 'next');
+                
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index === (currentSlide - 1 + totalSlides) % totalSlides) {
+                    slide.classList.add('prev');
+                } else if (index === (currentSlide + 1) % totalSlides) {
+                    slide.classList.add('next');
+                }
+            });
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+        
+        function changeSlide(direction) {
+            currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+            updateCarousel();
+        }
+        
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+        }
+        
+        // Auto-rotate every 5 seconds
+        let autoRotate = setInterval(() => changeSlide(1), 5000);
+        
+        // Pause on hover
+        const carouselContainer = document.querySelector('.carousel-container');
+        carouselContainer.addEventListener('mouseenter', () => {
+            clearInterval(autoRotate);
+        });
+        
+        carouselContainer.addEventListener('mouseleave', () => {
+            autoRotate = setInterval(() => changeSlide(1), 5000);
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+    </script>
 </body>
 </html>

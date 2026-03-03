@@ -180,15 +180,15 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-brand">Pocket Trainer</div>
         <div class="nav-links">
             <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
             <a href="{% url 'pokemon:pokedex' %}">Pokédex</a>
             <a href="{% url 'pokemon:my_team' %}">My Team</a>
             <a href="{% url 'pokemon:profile' %}">Profile</a>
             <a href="{% url 'pokemon:shop' %}">Shop</a>
-            <a href="{% url 'pokemon:safari_zone' %}">Safari Zone</a>
             <a href="{% url 'pokemon:inventory' %}" class="active">Inventory</a>
+
             <a href="{% url 'pokemon:achievements' %}">Achievements</a>
             <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -272,7 +272,7 @@
                 </div>
                 
                 <div class="item-card">
-                    <div class="item-icon">🎭</div>
+                    <div class="item-icon"></div>
                     <div class="item-name">Avatar Bundle</div>
                     <div class="item-description">Special trainer avatar customization!</div>
                     <div class="item-price">
@@ -286,7 +286,7 @@
         
         <!-- Coming Soon Section -->
         <div class="coming-soon">
-            <h3>🚧 More Items Coming Soon!</h3>
+            <h3>More Items Coming Soon!</h3>
             <p>Check back later for new items and exclusive deals.</p>
         </div>
     </div>

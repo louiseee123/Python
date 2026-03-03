@@ -162,6 +162,7 @@ class DailyTask(models.Model):
     description = models.TextField()
     xp_reward = models.IntegerField(default=10)
     egg_reward = models.IntegerField(default=0)
+    coin_reward = models.IntegerField(default=0)
     task_type = models.CharField(max_length=50)
     is_active = models.BooleanField(default=True)
 
@@ -171,7 +172,10 @@ class DailyTask(models.Model):
             rewards.append(f"+{self.xp_reward} XP")
         if self.egg_reward > 0:
             rewards.append(f"+{self.egg_reward} Egg")
+        if self.coin_reward > 0:
+            rewards.append(f"+{self.coin_reward} Coins")
         return f"{self.name} ({', '.join(rewards)})"
+
 
 
 class TrainerTaskCompletion(models.Model):

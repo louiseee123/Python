@@ -44,7 +44,16 @@
             border-radius: 50px;
         }
         .coins-icon {
-            font-size: 2.5rem;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #1a1a2e;
+            font-size: 1.2rem;
         }
         .coins-amount {
             font-size: 2rem;
@@ -94,6 +103,20 @@
             background: rgba(255, 255, 255, 0.1);
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
         }
+        .item-card.featured {
+            border: 2px solid #ffd700;
+            background: linear-gradient(180deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 255, 0.06) 100%);
+        }
+        .featured-badge {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #1a1a2e;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
         .item-icon {
             font-size: 4rem;
             margin-bottom: 15px;
@@ -132,7 +155,15 @@
             min-height: 32px;
         }
         .item-price-icon {
-            font-size: 1.4rem;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #1a1a2e;
         }
         .buy-btn {
             background: linear-gradient(135deg, #ffd700, #ff8c00);
@@ -159,6 +190,167 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            border: 2px solid #ffd700;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalPop 0.3s ease;
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .modal-description {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        .modal-price {
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+        .modal-price .price-label {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .modal-price .price-value {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .bulk-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .bulk-label {
+            display: block;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        .bulk-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .bulk-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 12px 15px;
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .bulk-input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+        .bulk-total {
+            font-size: 1rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #1a1a2e;
+        }
+        .modal-btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Success Modal */
+        .success-modal .modal-icon {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+        }
+        .success-modal .modal-title {
+            color: #4caf50;
+        }
+        .success-details {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .success-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4caf50;
+        }
+        .success-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
         }
         
         /* Placeholder Items */
@@ -198,34 +390,60 @@
     </style>
 </head>
 <body>
-     <nav class="navbar">
-        <div class="nav-brand">Pokemon Trainer</div>
+    <nav class="navbar">
+        <div class="nav-brand">Pocket Trainer</div>
         <div class="nav-links">
             <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
             <a href="{% url 'pokemon:pokedex' %}">Pokédex</a>
             <a href="{% url 'pokemon:my_team' %}">My Team</a>
             <a href="{% url 'pokemon:profile' %}">Profile</a>
+
             <a href="{% url 'pokemon:shop' %}" class="active">Shop</a>
-            <a href="{% url 'pokemon:safari_zone' %}">Safari Zone</a>
-            <a href="{% url 'pokemon:inventory' %}">Inventory</a>
+           
             <a href="{% url 'pokemon:achievements' %}">Achievements</a>
             <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px; fill: white;">
                     <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
                 </svg>
             </a>
         </div>
     </nav>
+
     
     <div class="container">
         <!-- Hunt Coins Header -->
         <div class="coins-header">
             <h1>PokeMart</h1>
             <div class="coins-display">
-                <span class="coins-icon">🪙</span>
+                <div class="coins-icon">C</div>
                 <div>
                     <div class="coins-amount">{{ trainer.hunt_coins }}</div>
                     <div class="coins-label">Hunt Coins</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Eggs Section - Featured at Top -->
+        <div class="shop-section">
+            <h2>
+                <span style="font-size: 1.5rem; margin-right: 8px;">🥚</span>
+                Pokemon Eggs
+            </h2>
+
+            <div class="items-grid">
+                <div class="item-card featured">
+                    <span class="featured-badge">BEST VALUE</span>
+                    <div class="item-icon" style="font-size: 4rem;">
+                        🥚
+                    </div>
+
+                    <div class="item-name">Pokemon Egg</div>
+                    <div class="item-description">A mysterious egg that may contain a rare Pokemon! Hatch it to expand your collection.</div>
+                    <div class="item-price">
+                        <span class="item-price-icon">C</span>
+                        50
+                    </div>
+                    <button class="buy-btn" onclick="openEggModal()">Purchase</button>
                 </div>
             </div>
         </div>
@@ -245,7 +463,7 @@
                         <div class="item-name">{{ item.name }}</div>
                         <div class="item-description">{{ item.description }}</div>
                         <div class="item-price">
-                            <span class="item-price-icon">🪙</span>
+                            <span class="item-price-icon">C</span>
                             {{ item.price }}
                         </div>
                         <button class="buy-btn" disabled>Coming Soon</button>
@@ -269,7 +487,7 @@
                         <div class="item-name">{{ item.name }}</div>
                         <div class="item-description">{{ item.description }}</div>
                         <div class="item-price">
-                            <span class="item-price-icon">🪙</span>
+                            <span class="item-price-icon">C</span>
                             {{ item.price }}
                         </div>
                         <button class="buy-btn" disabled>Coming Soon</button>
@@ -280,42 +498,7 @@
         </div>
         
         <div class="shop-section">
-            <h2>Eggs</h2>
-            <div class="items-grid">
-                {% for item in shop_items %}
-                    {% if item.item_type == 'egg' %}
-                    <div class="item-card">
-                        {% if item.image_url %}
-                        <div class="item-icon"><img src="{{ item.image_url }}" alt="{{ item.name }}"></div>
-                        {% else %}
-                        <div class="item-icon">{{ item.icon }}</div>
-                        {% endif %}
-                        <div class="item-name">{{ item.name }}</div>
-                        <div class="item-description">{{ item.description }}</div>
-                        <div class="item-price">
-                            <span class="item-price-icon">🪙</span>
-                            {{ item.price }}
-                        </div>
-                        <button class="buy-btn" disabled>Coming Soon</button>
-                    </div>
-                    {% endif %}
-                {% empty %}
-                <div class="item-card">
-                    <div class="item-icon">🥚</div>
-                    <div class="item-name">Pokemon Egg</div>
-                    <div class="item-description">A mysterious egg that may contain a rare Pokemon!</div>
-                    <div class="item-price">
-                        <span class="item-price-icon">🪙</span>
-                        50
-                    </div>
-                    <button class="buy-btn" disabled>Coming Soon</button>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        
-        <div class="shop-section">
-            <h2>🎨 Cosmetics</h2>
+            <h2>Cosmetics</h2>
             <div class="items-grid">
                 {% for item in shop_items %}
                     {% if item.item_type == 'cosmetic' %}
@@ -328,7 +511,7 @@
                         <div class="item-name">{{ item.name }}</div>
                         <div class="item-description">{{ item.description }}</div>
                         <div class="item-price">
-                            <span class="item-price-icon">🪙</span>
+                            <span class="item-price-icon">C</span>
                             {{ item.price }}
                         </div>
                         <button class="buy-btn" disabled>Coming Soon</button>
@@ -336,11 +519,11 @@
                     {% endif %}
                 {% empty %}
                 <div class="item-card">
-                    <div class="item-icon">🎭</div>
+                    <div class="item-icon">[Avatar]</div>
                     <div class="item-name">Avatar Bundle</div>
                     <div class="item-description">Special trainer avatar customization!</div>
                     <div class="item-price">
-                        <span class="item-price-icon">🪙</span>
+                        <span class="item-price-icon">C</span>
                         300
                     </div>
                     <button class="buy-btn" disabled>Coming Soon</button>
@@ -351,9 +534,151 @@
         
         <!-- Coming Soon Section -->
         <div class="coming-soon">
-            <h3>🚧 More Items Coming Soon!</h3>
+            <h3>More Items Coming Soon!</h3>
             <p>Check back later for new items and exclusive deals.</p>
         </div>
     </div>
+    
+    <!-- Egg Purchase Modal -->
+    <div class="modal-overlay" id="eggModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-icon" style="font-size: 2.5rem;">
+                    🥚
+                </div>
+
+                <div class="modal-title">Purchase Pokemon Egg</div>
+            </div>
+            <div class="modal-description">
+                A mysterious egg that may contain a rare Pokemon! Each egg costs 50 Hunt Coins.
+            </div>
+            <div class="modal-price">
+                <span class="price-label">Price: </span>
+                <span class="price-value">50 Hunt Coins each</span>
+            </div>
+            <div class="bulk-section">
+                <label class="bulk-label">Quantity:</label>
+                <div class="bulk-input-wrapper">
+                    <input type="number" class="bulk-input" id="eggQuantity" value="1" min="1" max="100" onchange="updateTotal()">
+                    <span class="bulk-total" id="totalPrice">Total: 50 Coins</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" onclick="closeEggModal()">Cancel</button>
+                <button class="modal-btn modal-btn-primary" onclick="purchaseEggs()">Purchase</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Modal -->
+    <div class="modal-overlay success-modal" id="successModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-icon" style="font-size: 2rem;">✓</div>
+                <div class="modal-title">Purchase Successful!</div>
+            </div>
+            <div class="success-details">
+                <div class="success-amount" id="successAmount">5 Eggs</div>
+                <div class="success-label">Added to your inventory</div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-primary" onclick="closeSuccessModal()">Awesome!</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const EGG_PRICE = 50;
+        let currentCoins = parseInt("{{ trainer.hunt_coins }}");
+
+        
+        function openEggModal() {
+            document.getElementById('eggModal').classList.add('active');
+            document.getElementById('eggQuantity').value = 1;
+            updateTotal();
+        }
+        
+        function closeEggModal() {
+            document.getElementById('eggModal').classList.remove('active');
+        }
+        
+        function updateTotal() {
+            const quantity = parseInt(document.getElementById('eggQuantity').value) || 1;
+            const total = quantity * EGG_PRICE;
+            document.getElementById('totalPrice').textContent = `Total: ${total} Coins`;
+        }
+        
+        function purchaseEggs() {
+            const quantity = parseInt(document.getElementById('eggQuantity').value) || 1;
+            const totalCost = quantity * EGG_PRICE;
+            
+            if (totalCost > currentCoins) {
+                alert('Not enough Hunt Coins! You need ' + totalCost + ' coins but only have ' + currentCoins);
+                return;
+            }
+            
+            // Get CSRF token from cookie
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            const csrftoken = getCookie('csrftoken');
+            
+            // Make AJAX call to purchase eggs
+            fetch('{% url "pokemon:buy_eggs" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                body: 'quantity=' + encodeURIComponent(quantity)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close purchase modal
+                    closeEggModal();
+                    
+                    // Show success modal
+                    document.getElementById('successAmount').textContent = data.quantity + ' Egg' + (data.quantity > 1 ? 's' : '');
+                    document.getElementById('successModal').classList.add('active');
+                    
+                    // Update coins display with server value
+                    currentCoins = data.remaining_coins;
+                    document.querySelector('.coins-amount').textContent = currentCoins;
+                } else {
+                    alert(data.error || 'Purchase failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+
+        
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+        }
+        
+        // Close modals when clicking outside
+        document.getElementById('eggModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEggModal();
+        });
+        document.getElementById('successModal').addEventListener('click', function(e) {
+            if (e.target === this) closeSuccessModal();
+        });
+    </script>
 </body>
 </html>

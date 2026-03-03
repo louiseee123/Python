@@ -371,15 +371,15 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-brand">Pocket Trainer</div>
         <div class="nav-links">
             <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
             <a href="{% url 'pokemon:pokedex' %}">Pokédex</a>
             <a href="{% url 'pokemon:my_team' %}">My Team</a>
             <a href="{% url 'pokemon:profile' %}">Profile</a>
             <a href="{% url 'pokemon:shop' %}">Shop</a>
-            <a href="{% url 'pokemon:safari_zone' %}">Safari Zone</a>
-            <a href="{% url 'pokemon:inventory' %}" >Inventory</a>
+           
+
             <a href="{% url 'pokemon:achievements' %}">Achievements</a>
             <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -508,31 +508,9 @@
         </div>
     </div>
     
-    <!-- Modal -->
-    <div class="modal-overlay" id="pokemonModal" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeModalBtn()">✕</button>
-            
-            <img src="" alt="" class="modal-pokemon-icon" id="modalIcon">
-            
-            <div class="modal-pokemon-name" id="modalName"></div>
-            
-            <div class="modal-pokemon-shiny" id="modalShiny" style="display: none;">⭐ SHINY ⭐</div>
-            
-            <div class="modal-pokemon-type">
-                <img src="" alt="" class="modal-pokemon-type-img" id="modalType">
-            </div>
-            
-            <div class="modal-pokemon-rarity" id="modalRarity"></div>
-            
-            <div class="modal-caught-date" id="modalDate"></div>
-            
-            <div class="modal-buttons">
-                <a href="" class="modal-btn modal-btn-add" id="modalAddBtn">Add to Team</a>
-                <button class="modal-btn modal-btn-back" onclick="closeModalBtn()">Back</button>
-            </div>
-        </div>
-    </div>
+    <!-- Include Pokemon Detail Card Component -->
+    {% include 'pokemon/components/pokemon_detail_card.html' %}
+
     
     <script>
         function filterPokemon() {
@@ -575,101 +553,46 @@
             });
         }
         
-        // Modal functions for available Pokemon (shows "Add to Team" button)
+        // Show Pokemon detail card for available Pokemon (shows "Add to Team" button)
         function showPokemonModal(card) {
-            var modal = document.getElementById('pokemonModal');
-            var pokemonId = card.dataset.pokemonId;
-            var pokemonName = card.dataset.pokemonName;
-            var pokemonType = card.dataset.pokemonType;
-            var pokemonRarity = card.dataset.pokemonRarity;
-            var pokemonSprite = card.dataset.pokemonSprite;
-            var pokemonShiny = card.dataset.pokemonShiny === 'true';
-            var caughtDate = card.dataset.caughtDate;
-            
-            document.getElementById('modalIcon').src = pokemonSprite;
-            document.getElementById('modalName').textContent = pokemonName;
-            
-            // Type icon
-            var typeNum = typeToNumber(pokemonType.toLowerCase());
-            document.getElementById('modalType').src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/' + typeNum + '.png';
-            
-            // Rarity
-            var rarityEl = document.getElementById('modalRarity');
-            rarityEl.textContent = pokemonRarity;
-            rarityEl.className = 'modal-pokemon-rarity rarity-' + pokemonRarity.toLowerCase() + '-badge';
-            
-            // Shiny
-            var shinyEl = document.getElementById('modalShiny');
-            shinyEl.style.display = pokemonShiny ? 'block' : 'none';
-            
-            // Date
-            document.getElementById('modalDate').textContent = 'Caught: ' + caughtDate;
-            
-            // Add button - show "Add to Team" for available Pokemon
-            var addBtn = document.getElementById('modalAddBtn');
-            addBtn.href = '/team/add/' + pokemonId + '/';
-            addBtn.textContent = 'Add to Team';
-            addBtn.className = 'modal-btn modal-btn-add';
-            addBtn.style.display = 'inline-block';
-            
-            modal.classList.add('active');
-        }
-        
-        // Show team member modal (for active team Pokemon - shows "Remove Pokemon" button)
-        function showTeamMemberModal(card) {
-            var modal = document.getElementById('pokemonModal');
-            var pokemonId = card.dataset.pokemonId;
-            var pokemonType = card.dataset.pokemonType;
-            var pokemonRarity = card.dataset.pokemonRarity;
-            var pokemonSprite = card.dataset.pokemonSprite;
-            var pokemonShiny = card.dataset.pokemonShiny === 'true';
-            var caughtDate = card.dataset.caughtDate;
-            var memberId = card.dataset.memberId;
-            var memberNickname = card.dataset.memberNickname;
-            
-            document.getElementById('modalIcon').src = pokemonSprite;
-            document.getElementById('modalName').textContent = memberNickname;
-            
-            // Type icon
-            var typeNum = typeToNumber(pokemonType.toLowerCase());
-            document.getElementById('modalType').src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/' + typeNum + '.png';
-            
-            // Rarity
-            var rarityEl = document.getElementById('modalRarity');
-            rarityEl.textContent = pokemonRarity;
-            rarityEl.className = 'modal-pokemon-rarity rarity-' + pokemonRarity.toLowerCase() + '-badge';
-            
-            // Shiny
-            var shinyEl = document.getElementById('modalShiny');
-            shinyEl.style.display = pokemonShiny ? 'block' : 'none';
-            
-            // Date
-            document.getElementById('modalDate').textContent = 'Caught: ' + caughtDate;
-            
-            // Change buttons for active team member - show "Remove Pokemon" and "Back"
-            var addBtn = document.getElementById('modalAddBtn');
-            addBtn.href = '/team/remove/' + memberId + '/';
-            addBtn.textContent = 'Remove Pokemon';
-            addBtn.className = 'modal-btn modal-btn-remove';
-            addBtn.onclick = function(e) {
-                e.preventDefault();
-                if (confirm('Remove ' + memberNickname + ' from your team?')) {
-                    window.location.href = '/team/remove/' + memberId + '/';
-                }
+            var data = {
+                id: card.dataset.pokemonId,
+                pokeapi_id: card.dataset.pokemonId,
+                name: card.dataset.pokemonName,
+                type: card.dataset.pokemonType,
+                rarity: card.dataset.pokemonRarity,
+                showdown_url: card.dataset.pokemonSprite,
+                showdown_shiny_url: card.dataset.pokemonSprite, // Use same sprite for now
+                description: '',
+                is_shiny: card.dataset.pokemonShiny === 'true',
+                in_team: false,
+                source_page: 'my_team_available',
+                add_url: '/team/add/' + card.dataset.pokemonId + '/'
             };
             
-            modal.classList.add('active');
+            showPokemonDetailCard(data);
         }
         
-        function closeModalBtn() {
-            document.getElementById('pokemonModal').classList.remove('active');
+        // Show Pokemon detail card for active team members (shows "Remove Pokemon" button)
+        function showTeamMemberModal(card) {
+            var data = {
+                id: card.dataset.pokemonId,
+                pokeapi_id: card.dataset.pokemonId,
+                name: card.dataset.memberNickname,
+                type: card.dataset.pokemonType,
+                rarity: card.dataset.pokemonRarity,
+                showdown_url: card.dataset.pokemonSprite,
+                showdown_shiny_url: card.dataset.pokemonSprite,
+                description: '',
+                is_shiny: card.dataset.pokemonShiny === 'true',
+                in_team: true,
+                source_page: 'my_team_active',
+                remove_url: '/team/remove/' + card.dataset.memberId + '/'
+            };
+            
+            showPokemonDetailCard(data);
         }
-        
-        function closeModal(event) {
-            if (event.target.classList.contains('modal-overlay')) {
-                event.target.classList.remove('active');
-            }
-        }
+
         
         // Type to number mapping
         function typeToNumber(type) {

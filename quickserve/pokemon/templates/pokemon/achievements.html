@@ -158,15 +158,15 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-brand">Pocket Trainer</div>
         <div class="nav-links">
             <a href="{% url 'pokemon:dashboard' %}">Dashboard</a>
             <a href="{% url 'pokemon:pokedex' %}">Pokédex</a>
             <a href="{% url 'pokemon:my_team' %}">My Team</a>
             <a href="{% url 'pokemon:profile' %}">Profile</a>
+
             <a href="{% url 'pokemon:shop' %}">Shop</a>
-            <a href="{% url 'pokemon:safari_zone' %}">Safari Zone</a>
-            <a href="{% url 'pokemon:inventory' %}">Inventory</a>
+          
             <a href="{% url 'pokemon:achievements' %}" class="active">Achievements</a>
             <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -175,12 +175,13 @@
             </a>
         </div>
     </nav>
+
     
     <div class="container">
         <a href="{% url 'pokemon:profile' %}" class="back-btn">← Back to Profile</a>
         
         <div class="achievements-header">
-            <h1 class="achievements-title">🏆 Achievements</h1>
+            <h1 class="achievements-title">Achievements</h1>
             <p class="achievements-subtitle">Track your progress and earn badges!</p>
             <p class="achievements-count"><span>{{ unlocked_count }}</span> / {{ total_count }} Achievements Unlocked</p>
         </div>
@@ -189,11 +190,11 @@
         {% for category in achievements_by_category %}
         <div class="category-section">
             <h2 class="category-title {{ category.grouper }}">
-                {% if category.grouper == 'collection' %}📚 Collection{% endif %}
-                {% if category.grouper == 'type' %}⚔️ Type Champions{% endif %}
-                {% if category.grouper == 'rarity' %}💎 Rarity{% endif %}
-                {% if category.grouper == 'shiny' %}✨ Shiny{% endif %}
-                {% if category.grouper == 'level' %}⭐ Level{% endif %}
+                {% if category.grouper == 'collection' %}Collection{% endif %}
+                {% if category.grouper == 'type' %}Type Champions{% endif %}
+                {% if category.grouper == 'rarity' %}Rarity{% endif %}
+                {% if category.grouper == 'shiny' %}Shiny{% endif %}
+                {% if category.grouper == 'level' %}Level{% endif %}
             </h2>
             <div class="achievements-grid">
                 {% for achievement in category.list %}

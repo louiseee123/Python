@@ -31,6 +31,8 @@ urlpatterns = [
     
     # Egg Gacha
     path('hatch-egg/', views.hatch_egg, name='hatch_egg'),
+    path('hatch-5-eggs/', views.hatch_5_eggs, name='hatch_5_eggs'),
+
     
     # Pokemon Detail
     path('pokemon/<int:pokemon_id>/', views.pokemon_detail, name='pokemon_detail'),
@@ -41,11 +43,15 @@ urlpatterns = [
     
     # Admin Panel (Lounelle only) - using /admin-panel/ to avoid conflict with Django admin
     path('admin-panel/', views.admin_panel, name='admin_panel'),
-    path('admin-panel/give-eggs/', views.admin_give_eggs, name='_adminGiveEggs'),
-    path('AdminGivePokeballs', views.admin_give_pokeballs, name='AdminGivePokeballs'),
+    path('admin-panel/give-eggs/', views.admin_give_eggs, name='admin_give_eggs'),
+
+    path('admin-panel/give-pokeballs/', views.admin_give_pokeballs, name='admin_give_pokeballs'),
+    path('admin-panel/toggle-shiny/', views.admin_toggle_shiny, name='admin_toggle_shiny'),
+
     
     # Shop
     path('shop/', views.shop, name='shop'),
+    path('shop/buy-eggs/', views.buy_eggs, name='buy_eggs'),
     
     # Inventory
     path('inventory/', views.inventory, name='inventory'),

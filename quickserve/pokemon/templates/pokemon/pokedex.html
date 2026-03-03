@@ -66,95 +66,115 @@
             font-size: 1.1rem;
         }
         
-        /* Filter Bar */
+        /* Filter Bar - Improved */
         .filter-bar { 
             display: flex; 
             flex-wrap: wrap; 
-            gap: 12px; 
-            margin-bottom: 25px; 
-            padding: 20px; 
-            background: rgba(255, 255, 255, 0.05); 
-            border-radius: 15px; 
+            gap: 15px; 
+            margin-bottom: 30px; 
+            padding: 25px; 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)); 
+            border-radius: 20px; 
             align-items: center; 
-            justify-content: center; 
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .search-box { 
             flex: 1; 
-            min-width: 200px; 
-            max-width: 350px; 
+            min-width: 250px; 
+            max-width: 400px; 
             position: relative; 
         }
         .search-box input { 
             width: 100%; 
-            padding: 12px 15px 12px 45px; 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            border-radius: 25px; 
-            background: rgba(255, 255, 255, 0.1); 
+            padding: 14px 20px 14px 50px; 
+            border: 2px solid rgba(255, 255, 255, 0.15); 
+            border-radius: 30px; 
+            background: rgba(0, 0, 0, 0.2); 
             color: white; 
-            font-size: 0.95rem; 
+            font-size: 1rem; 
             transition: all 0.3s ease; 
         }
-        .search-box input::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .search-box input::placeholder { color: rgba(255, 255, 255, 0.4); }
         .search-box input:focus { 
             outline: none; 
             border-color: #667eea; 
-            background: rgba(255, 255, 255, 0.15); 
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); 
+            background: rgba(0, 0, 0, 0.3); 
+            box-shadow: 0 0 25px rgba(102, 126, 234, 0.4); 
         }
-        .search-box::before { 
-            content: '🔍'; 
-            position: absolute; 
-            left: 15px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            font-size: 1rem; 
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .search-box input:focus + .search-icon,
+        .search-box:focus-within .search-icon {
+            opacity: 1;
         }
         
-        .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-group { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            align-items: center;
+        }
         .filter-label { 
-            font-size: 0.85rem; 
-            opacity: 0.7; 
-            margin-right: 5px;
+            font-size: 0.9rem; 
+            opacity: 0.8; 
+            margin-right: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .filter-btn { 
-            padding: 8px 16px; 
+            padding: 10px 20px; 
             border: 1px solid rgba(255, 255, 255, 0.2); 
-            border-radius: 20px; 
+            border-radius: 25px; 
             background: rgba(255, 255, 255, 0.05); 
             color: rgba(255, 255, 255, 0.7); 
-            font-size: 0.8rem; 
+            font-size: 0.85rem; 
             font-weight: 500; 
             cursor: pointer; 
             transition: all 0.3s ease; 
+            white-space: nowrap;
         }
-        .filter-btn:hover, .filter-btn.active { 
-            background: rgba(102, 126, 234, 0.3); 
-            border-color: #667eea; 
+        .filter-btn:hover { 
+            background: rgba(255, 255, 255, 0.15); 
+            border-color: rgba(255, 255, 255, 0.3); 
             color: white; 
+            transform: translateY(-2px);
+        }
+        .filter-btn.active { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            border-color: transparent; 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
         
-        /* Pokemon Grid - Smaller cards like my_team */
+        /* Pokemon Grid - 5 cards per row */
         .pokemon-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 10px;
         }
         
-        /* Pokemon Card - Smaller size like my_team */
+        /* Pokemon Card - Larger for 5 per row layout */
         .pokemon-card {
             background: rgba(255, 255, 255, 0.06);
             backdrop-filter: blur(8px);
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
-            min-width: 140px;
-            max-width: 160px;
-            flex: 1 ;
-            transition:1 140px all 0.3s ease;
+            transition: all 0.3s ease;
             position: relative;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            min-height: 180px;
+            min-height: 220px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -205,18 +225,18 @@
         /* Pokedex number */
         .pokedex-number {
             position: absolute;
-            top: 5px;
-            left: 8px;
-            font-size: 0.7rem;
-            opacity: 0.5;
+            top: 8px;
+            left: 12px;
+            font-size: 0.85rem;
+            opacity: 0.6;
             font-weight: bold;
         }
         
         /* Pokemon Image */
         .member-image {
-            width: 70px;
-            height: 70px;
-            margin: 8px auto;
+            width: 90px;
+            height: 90px;
+            margin: 12px auto;
             position: relative;
         }
         .member-image img {
@@ -224,11 +244,11 @@
             height: 100%;
             object-fit: contain;
             image-rendering: pixelated;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4));
             transition: all 0.3s ease;
         }
         .pokemon-card:hover .member-image img {
-            transform: scale(1.1);
+            transform: scale(1.15);
         }
         
         /* Shiny sparkle */
@@ -246,17 +266,26 @@
         .shiny-sparkle.active { opacity: 1; }
         @keyframes shiny-glow { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.1); } }
         
-        /* Shiny badge */
+        /* Shiny badge - Star icon instead of emoji */
         .shiny-badge { 
             position: absolute; 
-            top: 5px; 
-            right: 5px; 
-            font-size: 1.2rem; 
-            animation: star-twinkle 1s ease-in-out infinite;
+            top: 8px; 
+            right: 8px; 
+            width: 24px;
+            height: 24px;
             z-index: 10;
-            text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;
+            animation: star-twinkle 1s ease-in-out infinite;
         }
-        .shiny-star { color: #ffd700; text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; }
+        .shiny-badge svg {
+            width: 100%;
+            height: 100%;
+            fill: #ffd700;
+            filter: drop-shadow(0 0 8px #ffd700);
+        }
+        .shiny-star { 
+            color: #ffd700; 
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; 
+        }
         @keyframes star-twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.2); } }
         
         /* In Team badge */
@@ -274,19 +303,19 @@
         }
         
         .pokemon-name {
-            font-size: 0.85rem;
+            font-size: 1rem;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             word-wrap: break-word;
         }
         
         .pokemon-type {
             display: inline-block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         .pokemon-type-img {
-            width: 80px;
-            height: 30px;
+            width: 90px;
+            height: 34px;
             object-fit: contain;
             display: block;
         }
@@ -294,11 +323,11 @@
         /* Rarity Badge */
         .rarity-badge { 
             display: inline-block; 
-            padding: 3px 10px; 
+            padding: 5px 14px; 
             border-radius: 20px; 
-            font-size: 0.65rem; 
+            font-size: 0.75rem; 
             font-weight: 600; 
-            margin-top: 5px; 
+            margin-top: 8px; 
             letter-spacing: 0.5px; 
         }
         .rarity-common-badge { background: rgba(149, 165, 166, 0.3); border: 1px solid #95a5a6; }
@@ -354,15 +383,14 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="nav-brand">Pokemon Trainer</div>
+        <div class="nav-brand">Pocket Trainer</div>
         <div class="nav-links">
             <a href="{% url 'pokemon:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
             <a href="{% url 'pokemon:pokedex' %}" class="{% if request.resolver_match.url_name == 'pokedex' %}active{% endif %}">Pokédex</a>
             <a href="{% url 'pokemon:my_team' %}" class="{% if request.resolver_match.url_name == 'my_team' %}active{% endif %}">My Team</a>
             <a href="{% url 'pokemon:profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a>
+
             <a href="{% url 'pokemon:shop' %}" class="{% if request.resolver_match.url_name == 'shop' %}active{% endif %}">Shop</a>
-            <a href="{% url 'pokemon:safari_zone' %}" class="{% if request.resolver_match.url_name == 'safari_zone' %}active{% endif %}">Safari Zone</a>
-            <a href="{% url 'pokemon:inventory' %}" class="{% if request.resolver_match.url_name == 'inventory' %}active{% endif %}">Inventory</a>
             <a href="{% url 'pokemon:achievements' %}" class="{% if request.resolver_match.url_name == 'achievements' %}active{% endif %}">Achievements</a>
             <a href="{% url 'pokemon:logout' %}" class="logout-icon" title="Logout">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -371,6 +399,7 @@
             </a>
         </div>
     </nav>
+
     
     <div class="container">
         <div class="page-header">
@@ -385,7 +414,11 @@
         <!-- Filter Bar -->
         <div class="filter-bar">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search by name or #..." value="{{ search_query|default:'' }}">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search by name or number..." value="{{ search_query|default:'' }}">
             </div>
             <div class="filter-group">
                 <span class="filter-label">Type:</span>
@@ -424,8 +457,13 @@
                  data-pokemon-type="{{ item.pokemon.type }}"
                  data-pokemon-rarity="{{ item.pokemon.rarity }}"
                  data-pokemon-sprite="{{ item.pokemon.sprite_url }}"
+                 data-pokemon-showdown="{{ item.pokemon.showdown_url }}"
+                 data-pokemon-showdown-shiny="{{ item.pokemon.showdown_shiny_url }}"
+                 data-pokemon-description="{{ item.pokemon.description|default:'' }}"
+                 data-is-shiny="{% if item.is_shiny %}true{% else %}false{% endif %}"
+                 data-in-team="{% if item.in_team %}true{% else %}false{% endif %}"
                  data-unlocked="{% if item.is_unlocked %}true{% else %}false{% endif %}"
-                 {% if item.is_unlocked %}onclick="window.location.href='{% url 'pokemon:pokemon_detail' item.pokemon.id %}'"{% endif %}>
+                 {% if item.is_unlocked %}onclick="showPokemonDetailFromCard(this)"{% endif %}>
                 
                 <!-- Rarity ribbon -->
                 <div class="rarity-ribbon rarity-{{ item.pokemon.rarity|lower }}">
@@ -444,7 +482,11 @@
                     
                     {% if item.is_shiny %}
                     <div class="shiny-sparkle active"></div>
-                    <span class="shiny-badge">⭐</span>
+                    <div class="shiny-badge">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    </div>
                     {% endif %}
                 
                 <div class="member-image">
@@ -459,7 +501,7 @@
                     <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/{{ item.pokemon.type|lower|type_to_number }}.png" alt="{{ item.pokemon.type }}" class="pokemon-type-img" onerror="this.style.display='none'">
                 </div>
                 <span class="rarity-badge rarity-{{ item.pokemon.rarity|lower }}-badge">{{ item.pokemon.rarity }}</span>
-                <p class="click-hint">Click to view</p>
+                <p class="click-hint">Click to view details</p>
                 {% else %}
                 <div class="member-image">
                     <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png" alt="???">
@@ -481,11 +523,35 @@
         </div>
     </div>
     
+    <!-- Include Pokemon Detail Card Component -->
+    {% include 'pokemon/components/pokemon_detail_card.html' %}
+    
     <script>
         // Initialize results count on page load
         document.addEventListener('DOMContentLoaded', function() {
             updateResultsCount();
         });
+        
+        // Function to show Pokemon detail card from pokedex click
+        function showPokemonDetailFromCard(card) {
+            var data = {
+                id: card.dataset.pokemonId,
+                pokeapi_id: card.dataset.pokedexNumber,
+                name: card.dataset.pokemonName,
+                type: card.dataset.pokemonType,
+                rarity: card.dataset.pokemonRarity,
+                showdown_url: card.dataset.pokemonShowdown,
+                showdown_shiny_url: card.dataset.pokemonShowdownShiny,
+                description: card.dataset.pokemonDescription,
+                is_shiny: card.dataset.isShiny === 'true',
+                in_team: card.dataset.inTeam === 'true',
+                source_page: 'pokedex',
+                add_url: '/team/add/' + card.dataset.pokemonId + '/'
+            };
+            
+            showPokemonDetailCard(data);
+        }
+
         
         function filterPokemon() {
             var searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
